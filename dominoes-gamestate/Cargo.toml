@@ -1,0 +1,7 @@
+[package]
+name = "dominoes-gamestate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gamestate = { path = "../gamestate" }

@@ -1,6 +1,9 @@
-[package]
-name = "dominoes"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
+[workspace]
+resolver = "2"
+members = [
+    "dominoes-gamestate",
+    "dominoes-player",
+    "game",
+    "human-player",
+    "player"
+]

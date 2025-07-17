@@ -1,0 +1,7 @@
+[package]
+name = "dominoes-player"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+player = { path = "../player" }

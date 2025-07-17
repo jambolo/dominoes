@@ -1,0 +1,13 @@
+[package]
+name = "game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dominoes-gamestate = { path = "../dominoes-gamestate" }
+dominoes-player = { path = "../dominoes-player" }
+human-player = { path = "../human-player" }
+
+[[bin]]
+name = "dominoes-game"
+path = "src/main.rs"
