@@ -1,0 +1,3 @@
+[submodule "hidden-game-player"]
+	path = hidden-game-player
+	url = ../hidden-game-player/
