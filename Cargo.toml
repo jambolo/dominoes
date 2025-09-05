@@ -1,9 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-    "dominoes-gamestate",
-    "dominoes-player",
+    "dominoes-state",
     "game",
     "human-player",
-    "player"
+    "player",
+    "rules"
 ]
+
+[profile.dev]
+debug = true

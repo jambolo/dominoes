@@ -1,13 +1,18 @@
 [package]
 name = "game"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-dominoes-gamestate = { path = "../dominoes-gamestate" }
 dominoes-player = { path = "../dominoes-player" }
+dominoes-state = { path = "../dominoes-state" }
+hidden-game-player = { path = "../hidden-game-player" }
 human-player = { path = "../human-player" }
+iced = { version = "0.13", features = ["canvas"] }
+iced_wgpu = "0.13"
+player = { path = "../player" }
+rules = { path = "../rules" }
 
 [[bin]]
-name = "dominoes-game"
+name = "dominoes"
 path = "src/main.rs"

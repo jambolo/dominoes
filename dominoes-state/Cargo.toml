@@ -1,0 +1,11 @@
+[package]
+name = "dominoes-state"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hidden-game-player = { path = "../hidden-game-player" }
+multimap = "0.8"
+rand = "0.9"
+rand_chacha = "0.9"
+rules = { path = "../rules" }
