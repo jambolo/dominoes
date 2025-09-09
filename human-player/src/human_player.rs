@@ -1,8 +1,8 @@
 use std::io::{self, Write};
 
-use player::{Action, Hand, Player};
+use player::{Hand, Player};
 use rules::{Configuration, Tile};
-use dominoes_state::DominoesState;
+use dominoes_state::{Action, DominoesState};
 
 /// A concrete implementation of Player for human players
 ///
@@ -193,7 +193,7 @@ impl<'a> Player for HumanPlayer<'a> {
         self.hand.remove_tile(&tile);
         new_state.play_tile(tile, end);
 
-        (Action::play(self.player_id, tile), new_state)
+        (Action::play(self.player_id, tile, end), new_state)
     }
 
     fn has_playable_tile(&self, game_state: &DominoesState) -> bool {

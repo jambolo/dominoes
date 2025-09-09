@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use dominoes_state::DominoesState;
+use dominoes_state::{Action, DominoesState};
 use rules::{Configuration, Tile};
-use player::{Player, Action, Hand};
+use player::{Player, Hand};
 
 /// A concrete implementation of Player for dominoes games
 #[derive(Debug, Clone)]

@@ -1,7 +1,9 @@
-use dominoes_state::DominoesState;
+//! Module defining the Player trait and related functionality
+//!
+
+use dominoes_state::{Action, DominoesState};
 use rules::Tile;
-use crate::hand::Hand;
-use crate::action::Action;
+use crate::Hand;
 
 /// Base trait for all players in the game
 /// 
@@ -10,8 +12,8 @@ use crate::action::Action;
 /// 
 /// # Examples
 /// ```rust
-/// # use player::{Player, Action, Hand};
-/// # use dominoes_state::DominoesState;
+/// # use player::{Player, Hand};
+/// # use dominoes_state::{Action, DominoesState};
 /// # use rules::Configuration;
 /// 
 /// struct MyPlayer {
@@ -64,7 +66,8 @@ pub trait Player {
     /// # Examples
     /// ```rust
     /// # use dominoes_state::DominoesState;
-    /// # struct MyPlayer { hand: player::Hand }
+    /// # use player::Hand;
+    /// # struct MyPlayer { hand: Hand }
     /// # impl MyPlayer {
     /// fn set_up(&mut self, game_state: &mut DominoesState) {
     ///     for _ in 0..7 {  // Draw 7 tiles for standard game
@@ -92,9 +95,9 @@ pub trait Player {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::DominoesState;
-    /// # use player::Action;
-    /// # struct MyPlayer { player_id: u8, hand: player::Hand }
+    /// # use dominoes_state::{DominoesState, Action};
+    /// # use player::Hand;
+    /// # struct MyPlayer { player_id: u8, hand: Hand }
     /// # impl MyPlayer {
     /// #   fn has_playable_tile(&self, game_state: &DominoesState) -> bool { false }
     /// #   fn choose_tile_to_play(&self, game_state: &DominoesState) -> rules::Tile { rules::Tile::from((1,1)) }
@@ -104,7 +107,7 @@ pub trait Player {
     ///         let tile = self.choose_tile_to_play(game_state);
     ///         let mut new_state = game_state.clone();
     ///         new_state.play_tile(tile, None);
-    ///         (Action::play(self.player_id, tile), new_state)
+    ///         (Action::play(self.player_id, tile, None), new_state)
     ///     } else {
     ///         // Pass turn
     ///         (Action::pass(self.player_id), game_state.clone())
@@ -129,7 +132,8 @@ pub trait Player {
     /// 
     /// ```rust
     /// # use dominoes_state::DominoesState;
-    /// # struct MyPlayer { hand: player::Hand }
+    /// # use player::Hand;
+    /// # struct MyPlayer { hand: Hand }
     /// # impl MyPlayer {
     /// fn has_playable_tile(&self, game_state: &DominoesState) -> bool {
     ///     self.hand.tiles().iter()
@@ -196,9 +200,9 @@ pub trait Player {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dominoes_state::DominoesState;
+    use dominoes_state::{DominoesState, Action};
     use rules::{Configuration, Tile};
-    use crate::{Action, Hand};
+    use crate::Hand;
 
     // Test implementation of Player trait
     struct TestPlayer {

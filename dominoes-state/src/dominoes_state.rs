@@ -1,6 +1,6 @@
 use rules::{Configuration, Tile};
 use hidden_game_player::game_state::{GameState, PlayerId};
-use crate::{Layout, Boneyard, ZHash};
+use crate::{Action, Layout, Boneyard, ZHash};
 
 /// A concrete implementation of hidden_game_player::GameState for dominoes games
 #[derive(Debug, Clone)]
@@ -21,13 +21,30 @@ pub struct DominoesState {
     pub winner: Option<u8>,
 }
 
-impl GameState for DominoesState {
+impl GameState<Action> for DominoesState {
     fn fingerprint(&self) -> u64 {
         self.fingerprint.into()
     }
 
     fn whose_turn(&self) -> u8 {
         self.whose_turn
+    }
+
+    fn is_terminal(&self) -> bool {
+        self.game_is_over
+    }
+
+    fn apply(&self, action: &Action) -> Self {
+        assert!(false, "apply() is not yet implemented for DominoesState");
+        let mut new_state = self.clone();
+        if action.tile_drawn.is_some() {
+            let drawn_tile = new_state.draw_tile();
+            assert_eq!(drawn_tile, action.tile_drawn, "Drawn tile does not match action's drawn tile");
+        }
+        if let Some((tile, end)) = action.tile_played {
+            new_state.play_tile(tile, end);
+        }
+        new_state
     }
 }
 
@@ -774,5 +791,93 @@ mod tests {
         state.pass();
         assert_eq!(state.consecutive_passes, 3);
         assert!(state.game_is_over); // Still over
+    }
+
+    #[test]
+    fn test_is_terminal_initial_state() {
+        let configuration = Configuration::default();
+        let state = DominoesState::new(&configuration);
+        
+        // New game should not be terminal
+        assert!(!state.is_terminal());
+    }
+
+    #[test]
+    fn test_is_terminal_after_game_over() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+        
+        // Initially not terminal
+        assert!(!state.is_terminal());
+        
+        // Mark game as over with winner
+        state.mark_game_over(Some(0));
+        assert!(state.is_terminal());
+        
+        // Mark game as over without winner (draw)
+        let mut state2 = DominoesState::new(&configuration);
+        state2.mark_game_over(None);
+        assert!(state2.is_terminal());
+    }
+
+    #[test]
+    fn test_is_terminal_during_gameplay() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+        
+        // Play some tiles - game should remain non-terminal
+        let tile1 = Tile::from((3, 3));
+        state.play_tile(tile1, None);
+        assert!(!state.is_terminal());
+        
+        let tile2 = Tile::from((3, 5));
+        state.play_tile(tile2, Some(3));
+        assert!(!state.is_terminal());
+        
+        // Draw tiles - game should remain non-terminal
+        state.draw_tile();
+        assert!(!state.is_terminal());
+        
+        // Record passes - game should remain non-terminal
+        state.pass();
+        state.pass();
+        assert!(!state.is_terminal());
+    }
+
+    #[test]
+    fn test_is_terminal_consistency() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+        
+        // Test consistency for non-terminal state
+        assert!(!state.is_terminal());
+        assert!(!state.is_terminal()); // Multiple calls should be consistent
+        
+        // Mark as terminal and test consistency
+        state.mark_game_over(Some(1));
+        assert!(state.is_terminal());
+        assert!(state.is_terminal()); // Multiple calls should be consistent
+        assert!(state.is_terminal()); // Still consistent
+    }
+
+    #[test]
+    fn test_is_terminal_matches_game_is_over() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+        
+        // Initially both should be false
+        assert_eq!(state.is_terminal(), state.game_is_over);
+        assert!(!state.is_terminal());
+        
+        // After marking game over, both should be true
+        state.mark_game_over(Some(0));
+        assert_eq!(state.is_terminal(), state.game_is_over);
+        assert!(state.is_terminal());
+        
+        // Test with different winner scenarios
+        let mut state2 = DominoesState::new(&configuration);
+        state2.mark_game_over(None); // Draw
+        assert_eq!(state2.is_terminal(), state2.game_is_over);
+        assert!(state2.is_terminal());
     }
 }
