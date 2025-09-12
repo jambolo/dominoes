@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use dominoes_state::{Action, DominoesState};
+use player::{Hand, Player};
 use rules::{Configuration, Tile};
-use player::{Player, Hand};
 
 /// A concrete implementation of Player for dominoes games
 #[derive(Debug, Clone)]
@@ -51,7 +51,10 @@ impl<'a> DominoesPlayer<'a> {
 
     /// Gets the probability that the opponent has a specific tile
     pub fn opponent_tile_probability(&self, tile: Tile) -> f64 {
-        self.opponent_tile_probabilities.get(&tile).copied().unwrap_or(0.0)
+        self.opponent_tile_probabilities
+            .get(&tile)
+            .copied()
+            .unwrap_or(0.0)
     }
 
     /// Removes a tile from the hidden list (when played or drawn by this player)
@@ -92,7 +95,8 @@ impl<'a> DominoesPlayer<'a> {
 
             // Update probabilities for all hidden tiles
             for tile in &self.hidden {
-                self.opponent_tile_probabilities.insert(*tile, prob_in_opponent_hand);
+                self.opponent_tile_probabilities
+                    .insert(*tile, prob_in_opponent_hand);
             }
         }
     }
@@ -108,29 +112,31 @@ impl<'a> Player for DominoesPlayer<'a> {
         }
     }
 
-    fn set_up(&mut self, game_state: &mut DominoesState) {
+    fn set_up(&mut self, state: &mut DominoesState) {
         // Draw the starting hand size number of tiles from the boneyard
         let hand_size = self.configuration.starting_hand_size;
         for _ in 0..hand_size {
-            if let Some(tile) = game_state.draw_tile() {
+            if let Some(tile) = state.draw_tile() {
                 self.hand.add_tile(tile);
                 self.remove_hidden_tile(tile); // Remove drawn tile from hidden
-
             }
         }
     }
 
-    fn my_turn(&mut self, game_state: &DominoesState) -> (Action, DominoesState) {
+    fn my_turn(&mut self, state: &DominoesState) -> (Action, DominoesState) {
         // TODO: Implement dominoes-specific game logic
         // Rules is available as self.configuration: self.configuration.num_players, self.configuration.variation, etc.
-        // Action history is available via game_state.get_actions()
+        // Action history is available via state.get_actions()
         // This is a stub implementation that just returns a pass action and the same state
-        let new_state = game_state.clone();
+        let new_state = state.clone();
         (Action::pass(self.player_id), new_state)
     }
 
-    fn has_playable_tile(&self, game_state: &DominoesState) -> bool {
-        self.hand.tiles().iter().any(|tile| game_state.can_play_tile(tile, None))
+    fn has_playable_tile(&self, state: &DominoesState) -> bool {
+        self.hand
+            .tiles()
+            .iter()
+            .any(|tile| state.can_play_tile(tile, None))
     }
 
     fn hand(&self) -> &Hand {
@@ -176,11 +182,11 @@ mod tests {
     fn test_dominoes_player_implements_player_trait() {
         let configuration = Configuration::default();
         let mut player = DominoesPlayer::new(1, &configuration);
-        let game_state = DominoesState::new(&configuration);
+        let state = DominoesState::new(&configuration);
 
         // Test that my_turn method exists and returns expected types
         // Focus on DominoesPlayer's implementation, not external dependencies
-        let (returned_action, new_state) = player.my_turn(&game_state);
+        let (returned_action, new_state) = player.my_turn(&state);
 
         // Test DominoesPlayer's specific behavior: should return pass action in stub implementation
         assert_eq!(returned_action.player_id, 1);
@@ -189,7 +195,7 @@ mod tests {
 
         // Note: Since the stub implementation returns the same state, we can't test for added actions
         // This test focuses on verifying the method exists and returns correct types
-        assert_eq!(new_state.whose_turn, game_state.whose_turn);
+        assert_eq!(new_state.whose_turn, state.whose_turn);
     }
 
     #[test]
@@ -346,7 +352,10 @@ mod tests {
         }
 
         // Verify hidden count decreased
-        assert_eq!(player.hidden_tiles().len(), initial_hidden_count - hand_tiles.len());
+        assert_eq!(
+            player.hidden_tiles().len(),
+            initial_hidden_count - hand_tiles.len()
+        );
 
         // Verify tiles are in hand but not in hidden
         for tile in &hand_tiles {
@@ -380,14 +389,14 @@ mod tests {
     fn test_dominoes_player_set_up() {
         let configuration = Configuration::default(); // 2 players, Traditional, 7 tiles each
         let mut player = DominoesPlayer::new(1, &configuration);
-        let mut game_state = DominoesState::new(&configuration);
+        let mut state = DominoesState::new(&configuration);
 
         // Initially player has no tiles
         assert_eq!(player.hand.len(), 0);
         assert_eq!(player.hidden_tiles().len(), 28); // All tiles are hidden initially
 
         // Setup player - should draw 7 tiles for 2-player Traditional game
-        player.set_up(&mut game_state);
+        player.set_up(&mut state);
 
         // Player should now have 7 tiles in hand
         assert_eq!(player.hand.len(), 7);
@@ -395,17 +404,17 @@ mod tests {
         // This would need to be done manually in a real game implementation
 
         // Boneyard should have 21 tiles left (28 - 7)
-        assert_eq!(game_state.boneyard.count(), 21);
+        assert_eq!(state.boneyard.count(), 21);
 
         // Test with different variation
         let configuration_bergen = Configuration::new(4, rules::Variation::Bergen, 6, 6);
         let mut player_bergen = DominoesPlayer::new(1, &configuration_bergen);
-        let mut game_state_bergen = DominoesState::new(&configuration_bergen);
+        let mut state_bergen = DominoesState::new(&configuration_bergen);
 
         // Bergen uses 6 tiles per player regardless of player count
-        player_bergen.set_up(&mut game_state_bergen);
+        player_bergen.set_up(&mut state_bergen);
         assert_eq!(player_bergen.hand.len(), 6);
-        assert_eq!(game_state_bergen.boneyard.count(), 22); // 28 - 6 = 22
+        assert_eq!(state_bergen.boneyard.count(), 22); // 28 - 6 = 22
     }
 
     #[test]
@@ -486,8 +495,8 @@ mod tests {
         let mut player = DominoesPlayer::new(1, &configuration);
 
         // Setup: opponent should have 7 tiles, we have 7, boneyard has 14
-        let mut game_state = DominoesState::new(&configuration);
-        player.set_up(&mut game_state);
+        let mut state = DominoesState::new(&configuration);
+        player.set_up(&mut state);
 
         // Manually remove the tiles in our hand from the hidden list
         // to simulate the real game behavior where we track known tiles
@@ -502,7 +511,7 @@ mod tests {
         }
 
         // Update probabilities
-        player.update_opponent_probabilities(game_state.boneyard.count());
+        player.update_opponent_probabilities(state.boneyard.count());
 
         // Hidden tiles (21 remaining) should have probability = 7/21 = 1/3
         // (7 tiles in opponent hand out of 21 unknown tiles)
@@ -517,10 +526,10 @@ mod tests {
     fn test_probability_integration_scenario() {
         let configuration = Configuration::default();
         let mut player = DominoesPlayer::new(1, &configuration);
-        let mut game_state = DominoesState::new(&configuration);
+        let mut state = DominoesState::new(&configuration);
 
         // Initial setup
-        player.set_up(&mut game_state);
+        player.set_up(&mut state);
 
         // Simulate opponent playing a tile (we observe it)
         let opponent_played = Tile::from((0, 1));
@@ -530,7 +539,7 @@ mod tests {
         assert_eq!(player.opponent_tile_probability(opponent_played), 0.0);
 
         // Update probabilities based on new state
-        player.update_opponent_probabilities(game_state.boneyard.count());
+        player.update_opponent_probabilities(state.boneyard.count());
 
         // Verify that removed tile still has 0 probability
         assert_eq!(player.opponent_tile_probability(opponent_played), 0.0);

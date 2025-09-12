@@ -1,8 +1,8 @@
+use crate::{Action, Boneyard, Layout, ZHash};
+use hidden_game_player::{PlayerId, State};
 use rules::{Configuration, Tile};
-use hidden_game_player::game_state::{GameState, PlayerId};
-use crate::{Action, Layout, Boneyard, ZHash};
 
-/// A concrete implementation of hidden_game_player::GameState for dominoes games
+/// A concrete implementation of hidden_game_player::State for dominoes games
 #[derive(Debug, Clone)]
 pub struct DominoesState {
     /// The layout
@@ -21,7 +21,7 @@ pub struct DominoesState {
     pub winner: Option<u8>,
 }
 
-impl GameState<Action> for DominoesState {
+impl State<Action> for DominoesState {
     fn fingerprint(&self) -> u64 {
         self.fingerprint.into()
     }
@@ -39,7 +39,10 @@ impl GameState<Action> for DominoesState {
         let mut new_state = self.clone();
         if action.tile_drawn.is_some() {
             let drawn_tile = new_state.draw_tile();
-            assert_eq!(drawn_tile, action.tile_drawn, "Drawn tile does not match action's drawn tile");
+            assert_eq!(
+                drawn_tile, action.tile_drawn,
+                "Drawn tile does not match action's drawn tile"
+            );
         }
         if let Some((tile, end)) = action.tile_played {
             new_state.play_tile(tile, end);
@@ -63,7 +66,7 @@ impl DominoesState {
     /// let state = DominoesState::new(&config);
     /// assert!(!state.game_is_over);
     /// ```
-    pub fn new(configuration: & Configuration) -> Self {
+    pub fn new(configuration: &Configuration) -> Self {
         Self {
             layout: Layout::new(configuration),
             boneyard: Boneyard::new(configuration),
@@ -115,7 +118,10 @@ impl DominoesState {
         } else {
             // If the layout is empty, a double can be played
             // TODO: Handle different variations of the game here
-            assert!(end.is_none(), "An end was specified for an empty layout. Something is wrong.");
+            assert!(
+                end.is_none(),
+                "An end was specified for an empty layout. Something is wrong."
+            );
             tile.is_double()
         }
     }
@@ -158,11 +164,17 @@ impl DominoesState {
     /// }
     /// ```
     pub fn play_tile(&mut self, tile: Tile, end: Option<u8>) {
-        assert!(self.can_play_tile(&tile, end), "Tile {tile} cannot be played on the layout");
+        assert!(
+            self.can_play_tile(&tile, end),
+            "Tile {tile} cannot be played on the layout"
+        );
 
         if let Some(matched_end) = end {
             // Find the index of a matching open end
-            let (parent_index, _) = self.layout.open.iter_all()
+            let (parent_index, _) = self
+                .layout
+                .open
+                .iter_all()
                 .find(|(_, values)| values.contains(&matched_end))
                 .expect("No matching open end found");
 
@@ -174,15 +186,23 @@ impl DominoesState {
 
             // Update the fingerprint for the matched end count already decremented by add_tile.
             let matched_count = self.layout.open_count(matched_end);
-            self.fingerprint.change_end_count(matched_end, matched_count + 1, matched_count);
+            self.fingerprint
+                .change_end_count(matched_end, matched_count + 1, matched_count);
 
             // Update the fingerprint for the new end count already incremented by add_tile.
             let new_end_count = self.layout.open_count(new_end);
             assert!(new_end_count >= new_end_change);
-            self.fingerprint.change_end_count(new_end, new_end_count - new_end_change, new_end_count);
+            self.fingerprint.change_end_count(
+                new_end,
+                new_end_count - new_end_change,
+                new_end_count,
+            );
         } else {
             // If no end specified, the tile must be a double and the layout must be empty
-            assert!(self.layout.is_empty(), "Layout is not empty; must specify an end to play on");
+            assert!(
+                self.layout.is_empty(),
+                "Layout is not empty; must specify an end to play on"
+            );
 
             // Place the tile in the layout
             let (new_end, new_end_change) = self.layout.attach(tile, None);
@@ -192,7 +212,8 @@ impl DominoesState {
 
             // Update the fingerprint for the new end count
             assert!(self.layout.open_count(new_end) == new_end_change);
-            self.fingerprint.change_end_count(new_end, 0, new_end_change);
+            self.fingerprint
+                .change_end_count(new_end, 0, new_end_change);
         }
         self.update_consecutive_passes(false); // Reset consecutive passes because a tile was played
     }
@@ -212,16 +233,16 @@ impl DominoesState {
     ///
     /// let config = Configuration::default();
     /// let mut state = DominoesState::new(&config);
-    /// 
+    ///
     /// // Initially game is not over
     /// assert!(!state.game_is_over);
     /// assert_eq!(state.winner, None);
-    /// 
+    ///
     /// // End game with a winner (player ID 0)
     /// state.mark_game_over(Some(0));
     /// assert!(state.game_is_over);
     /// assert_eq!(state.winner, Some(0));
-    /// 
+    ///
     /// // Can also end in a draw
     /// let mut state2 = DominoesState::new(&config);
     /// state2.mark_game_over(None);
@@ -250,18 +271,18 @@ impl DominoesState {
     ///
     /// let config = Configuration::default();
     /// let mut state = DominoesState::new(&config);
-    /// 
+    ///
     /// // Initially no passes
     /// assert_eq!(state.consecutive_passes, 0);
-    /// 
+    ///
     /// // Record a pass
     /// state.pass();
     /// assert_eq!(state.consecutive_passes, 1);
-    /// 
+    ///
     /// // Record another pass
     /// state.pass();
     /// assert_eq!(state.consecutive_passes, 2);
-    /// 
+    ///
     /// // Playing a tile resets the counter
     /// let tile = rules::Tile::from((6, 6));
     /// if state.can_play_tile(&tile, None) {
@@ -276,7 +297,11 @@ impl DominoesState {
     // Increments the consecutive passes counter, or resets it
     fn update_consecutive_passes(&mut self, increment: bool) {
         // FIXME: This currently does not change the fingerprint, but it probably should
-        self.consecutive_passes = if increment { self.consecutive_passes + 1 } else { 0 };
+        self.consecutive_passes = if increment {
+            self.consecutive_passes + 1
+        } else {
+            0
+        };
     }
 }
 
@@ -296,7 +321,7 @@ mod tests {
     }
 
     #[test]
-    fn test_game_state_access() {
+    fn test_state_access() {
         let configuration = Configuration::default();
         let state = DominoesState::new(&configuration);
         // Test DominoesState functionality
@@ -503,11 +528,11 @@ mod tests {
     }
 
     #[test]
-    fn test_game_state_trait_implementation() {
+    fn test_state_trait_implementation() {
         let configuration = Configuration::default();
         let state = DominoesState::new(&configuration);
 
-        // Test GameState trait methods
+        // Test State trait methods
         assert_eq!(state.whose_turn(), 0); // PlayerId::ALICE as u8
 
         // Test fingerprint (should be valid u64)
@@ -539,15 +564,20 @@ mod tests {
 
         // Play a sequence of tiles to test complex interactions
         let tiles = vec![
-            (Tile::from((6, 6)), None),           // Start with double-6
-            (Tile::from((3, 6)), Some(6)),        // Play 6-3 on 6
-            (Tile::from((1, 6)), Some(6)),        // Play 6-1 on other 6
-            (Tile::from((3, 4)), Some(3)),        // Play 3-4 on 3
-            (Tile::from((1, 2)), Some(1)),        // Play 1-2 on 1
+            (Tile::from((6, 6)), None),    // Start with double-6
+            (Tile::from((3, 6)), Some(6)), // Play 6-3 on 6
+            (Tile::from((1, 6)), Some(6)), // Play 6-1 on other 6
+            (Tile::from((3, 4)), Some(3)), // Play 3-4 on 3
+            (Tile::from((1, 2)), Some(1)), // Play 1-2 on 1
         ];
 
         for (tile, end) in tiles {
-            assert!(state.can_play_tile(&tile, end), "Cannot play tile {:?} with end {:?}", tile, end);
+            assert!(
+                state.can_play_tile(&tile, end),
+                "Cannot play tile {:?} with end {:?}",
+                tile,
+                end
+            );
             state.play_tile(tile, end);
         }
 
@@ -573,7 +603,7 @@ mod tests {
 
         // End game with Alice as winner
         state.mark_game_over(Some(0)); // PlayerId::ALICE as u8
-        
+
         assert!(state.game_is_over);
         assert_eq!(state.winner, Some(0));
     }
@@ -585,7 +615,7 @@ mod tests {
 
         // End game in a draw (no winner)
         state.mark_game_over(None);
-        
+
         assert!(state.game_is_over);
         assert_eq!(state.winner, None);
     }
@@ -619,7 +649,7 @@ mod tests {
         // Play some tiles first
         let tile1 = Tile::from((3, 3));
         state.play_tile(tile1, None);
-        
+
         let tile2 = Tile::from((3, 5));
         state.play_tile(tile2, Some(3));
 
@@ -628,7 +658,7 @@ mod tests {
 
         // End game abruptly
         state.mark_game_over(Some(0)); // PlayerId::ALICE as u8
-        
+
         // Should be over regardless of game state
         assert!(state.game_is_over);
         assert_eq!(state.winner, Some(0));
@@ -711,7 +741,7 @@ mod tests {
 
         // Draw a tile (doesn't reset pass counter)
         let _drawn_tile = state.draw_tile();
-        
+
         // Pass (should increment normally)
         state.pass();
         assert_eq!(state.consecutive_passes, 1);
@@ -730,7 +760,7 @@ mod tests {
         // Record passes equal to number of players
         state.pass(); // Player 1 passes
         state.pass(); // Player 2 passes
-        
+
         // In a 2-player game, this might indicate game should end
         assert_eq!(state.consecutive_passes as usize, configuration.num_players);
 
@@ -741,7 +771,7 @@ mod tests {
         if state.consecutive_passes as usize >= configuration.num_players {
             state.mark_game_over(None); // End in draw due to all players passing
         }
-        
+
         assert!(state.game_is_over);
         assert_eq!(state.winner, None);
     }
@@ -781,7 +811,7 @@ mod tests {
 
         // End the game
         state.mark_game_over(Some(0)); // PlayerId::ALICE as u8
-        
+
         // Game should be over, but pass counter should remain
         assert!(state.game_is_over);
         assert_eq!(state.winner, Some(0));
@@ -797,7 +827,7 @@ mod tests {
     fn test_is_terminal_initial_state() {
         let configuration = Configuration::default();
         let state = DominoesState::new(&configuration);
-        
+
         // New game should not be terminal
         assert!(!state.is_terminal());
     }
@@ -806,14 +836,14 @@ mod tests {
     fn test_is_terminal_after_game_over() {
         let configuration = Configuration::default();
         let mut state = DominoesState::new(&configuration);
-        
+
         // Initially not terminal
         assert!(!state.is_terminal());
-        
+
         // Mark game as over with winner
         state.mark_game_over(Some(0));
         assert!(state.is_terminal());
-        
+
         // Mark game as over without winner (draw)
         let mut state2 = DominoesState::new(&configuration);
         state2.mark_game_over(None);
@@ -824,20 +854,20 @@ mod tests {
     fn test_is_terminal_during_gameplay() {
         let configuration = Configuration::default();
         let mut state = DominoesState::new(&configuration);
-        
+
         // Play some tiles - game should remain non-terminal
         let tile1 = Tile::from((3, 3));
         state.play_tile(tile1, None);
         assert!(!state.is_terminal());
-        
+
         let tile2 = Tile::from((3, 5));
         state.play_tile(tile2, Some(3));
         assert!(!state.is_terminal());
-        
+
         // Draw tiles - game should remain non-terminal
         state.draw_tile();
         assert!(!state.is_terminal());
-        
+
         // Record passes - game should remain non-terminal
         state.pass();
         state.pass();
@@ -848,11 +878,11 @@ mod tests {
     fn test_is_terminal_consistency() {
         let configuration = Configuration::default();
         let mut state = DominoesState::new(&configuration);
-        
+
         // Test consistency for non-terminal state
         assert!(!state.is_terminal());
         assert!(!state.is_terminal()); // Multiple calls should be consistent
-        
+
         // Mark as terminal and test consistency
         state.mark_game_over(Some(1));
         assert!(state.is_terminal());
@@ -864,16 +894,16 @@ mod tests {
     fn test_is_terminal_matches_game_is_over() {
         let configuration = Configuration::default();
         let mut state = DominoesState::new(&configuration);
-        
+
         // Initially both should be false
         assert_eq!(state.is_terminal(), state.game_is_over);
         assert!(!state.is_terminal());
-        
+
         // After marking game over, both should be true
         state.mark_game_over(Some(0));
         assert_eq!(state.is_terminal(), state.game_is_over);
         assert!(state.is_terminal());
-        
+
         // Test with different winner scenarios
         let mut state2 = DominoesState::new(&configuration);
         state2.mark_game_over(None); // Draw
