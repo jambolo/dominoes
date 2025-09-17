@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use dominoes_state::{Action, DominoesState};
 use player::{Hand, Player};
 use rules::{Configuration, Tile};
+use hidden_game_player::{mcts, State};
+use crate::{DominoesResponseGenerator, DominoesRollout};
+
 
 /// A concrete implementation of Player for dominoes games
 #[derive(Debug, Clone)]
@@ -128,8 +131,22 @@ impl<'a> Player for DominoesPlayer<'a> {
         // Rules is available as self.configuration: self.configuration.num_players, self.configuration.variation, etc.
         // Action history is available via state.get_actions()
         // This is a stub implementation that just returns a pass action and the same state
-        let new_state = state.clone();
-        (Action::pass(self.player_id), new_state)
+
+        let rg = DominoesResponseGenerator::new();
+        let rollout = DominoesRollout::new();
+        let action: Option<Action> = mcts::search(state, &rg, &rollout, 1.414f32, 1000);
+
+        match action {
+            Some(action) => {
+                let new_state = state.apply(&action);
+                (action, new_state)
+            }
+            None => {
+                // No actions available, pass
+                let pass_action = Action::pass(self.player_id);
+                (pass_action, state.clone())
+            }
+        }
     }
 
     fn has_playable_tile(&self, state: &DominoesState) -> bool {

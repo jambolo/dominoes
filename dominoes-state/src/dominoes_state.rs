@@ -21,7 +21,9 @@ pub struct DominoesState {
     pub winner: Option<u8>,
 }
 
-impl State<Action> for DominoesState {
+impl State for DominoesState {
+    type Action = Action;
+
     fn fingerprint(&self) -> u64 {
         self.fingerprint.into()
     }
@@ -34,7 +36,7 @@ impl State<Action> for DominoesState {
         self.game_is_over
     }
 
-    fn apply(&self, action: &Action) -> Self {
+    fn apply(&self, action: &Self::Action) -> Self {
         assert!(false, "apply() is not yet implemented for DominoesState");
         let mut new_state = self.clone();
         if action.tile_drawn.is_some() {

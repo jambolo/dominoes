@@ -114,7 +114,13 @@ impl Boneyard {
     /// # use dominoes_state::Boneyard;
     /// # use rules::Tile;
     ///
-    /// let tiles: Vec<rules::Tile> = vec![Tile::from((0, 0)), Tile::from((1, 1)), Tile::from((2, 2)), Tile::from((3, 3)), Tile::from((4, 4))];
+    /// let tiles: Vec<rules::Tile> = vec![
+    ///     Tile::from((0, 0)),
+    ///     Tile::from((1, 1)),
+    ///     Tile::from((2, 2)),
+    ///     Tile::from((3, 3)),
+    ///     Tile::from((4, 4)),
+    /// ];
     /// let mut boneyard = Boneyard::with(tiles);
     ///
     /// // Draw some tiles first
@@ -542,13 +548,13 @@ mod tests {
     fn test_boneyard_peek_empty() {
         let tiles = vec![rules::Tile::from((0, 0))];
         let mut boneyard = Boneyard::with(tiles);
-        
+
         // Peek at the only tile
         assert_eq!(boneyard.peek(), Some(&rules::Tile::from((0, 0))));
-        
+
         // Draw the tile
         boneyard.draw();
-        
+
         // Peek on empty boneyard should return None
         assert_eq!(boneyard.peek(), None);
         assert!(boneyard.is_empty());
@@ -558,20 +564,20 @@ mod tests {
     fn test_boneyard_peek_consistency() {
         let tiles = vec![rules::Tile::from((1, 2)), rules::Tile::from((3, 4)), rules::Tile::from((5, 6))];
         let mut boneyard = Boneyard::with(tiles);
-        
+
         // Multiple peeks should return the same tile
         let first_peek = boneyard.peek();
         let second_peek = boneyard.peek();
         let third_peek = boneyard.peek();
-        
+
         assert_eq!(first_peek, second_peek);
         assert_eq!(second_peek, third_peek);
         assert_eq!(first_peek, Some(&rules::Tile::from((1, 2))));
-        
+
         // Draw should return the same tile that was peeked
         let drawn = boneyard.draw();
         assert_eq!(drawn, Some(rules::Tile::from((1, 2))));
-        
+
         // Peek should now show the next tile
         assert_eq!(boneyard.peek(), Some(&rules::Tile::from((3, 4))));
     }
@@ -580,21 +586,21 @@ mod tests {
     fn test_boneyard_is_empty_states() {
         let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1))];
         let mut boneyard = Boneyard::with(tiles);
-        
+
         // Initially not empty
         assert!(!boneyard.is_empty());
         assert_eq!(boneyard.count(), 2);
-        
+
         // Draw first tile - still not empty
         boneyard.draw();
         assert!(!boneyard.is_empty());
         assert_eq!(boneyard.count(), 1);
-        
+
         // Draw second tile - now empty
         boneyard.draw();
         assert!(boneyard.is_empty());
         assert_eq!(boneyard.count(), 0);
-        
+
         // Remains empty after additional draw attempts
         boneyard.draw();
         assert!(boneyard.is_empty());
@@ -605,22 +611,22 @@ mod tests {
     fn test_boneyard_count_accuracy() {
         let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 3, 7);
         let mut boneyard = Boneyard::new(&configuration);
-        
+
         // Initial count should match expected tile count for double-3 set
         let expected_count = 10; // (3+1)*(3+2)/2 = 4*5/2 = 10
         assert_eq!(boneyard.count(), expected_count);
-        
+
         // Count should decrease accurately with each draw
         for i in 0..expected_count {
             assert_eq!(boneyard.count(), expected_count - i);
             let tile = boneyard.draw();
             assert!(tile.is_some(), "Failed to draw tile at iteration {}", i);
         }
-        
+
         // Should be empty and count should be 0
         assert_eq!(boneyard.count(), 0);
         assert!(boneyard.is_empty());
-        
+
         // Further draws shouldn't affect count
         boneyard.draw();
         assert_eq!(boneyard.count(), 0);
@@ -630,13 +636,13 @@ mod tests {
     fn test_boneyard_with_empty_tiles() {
         let tiles: Vec<rules::Tile> = vec![];
         let mut boneyard = Boneyard::with(tiles);
-        
+
         // Should be empty from the start
         assert!(boneyard.is_empty());
         assert_eq!(boneyard.count(), 0);
         assert_eq!(boneyard.peek(), None);
         assert_eq!(boneyard.draw(), None);
-        
+
         // Shuffle on empty boneyard should work
         boneyard.shuffle();
         assert!(boneyard.is_empty());
@@ -646,10 +652,10 @@ mod tests {
     fn test_boneyard_large_set() {
         let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 9, 10);
         let mut boneyard = Boneyard::new(&configuration);
-        
+
         // Double-9 set should have 55 tiles: (9+1)*(9+2)/2 = 10*11/2 = 55
         assert_eq!(boneyard.count(), 55);
-        
+
         // Draw multiple tiles and verify count consistency
         for _ in 0..20 {
             let initial_count = boneyard.count();
@@ -657,7 +663,7 @@ mod tests {
             assert!(tile.is_some());
             assert_eq!(boneyard.count(), initial_count - 1);
         }
-        
+
         // Should still have tiles remaining
         assert_eq!(boneyard.count(), 35);
         assert!(!boneyard.is_empty());
@@ -666,40 +672,40 @@ mod tests {
     #[test]
     fn test_boneyard_shuffle_after_peek() {
         let tiles = vec![
-            rules::Tile::from((0, 0)), 
-            rules::Tile::from((1, 1)), 
-            rules::Tile::from((2, 2)), 
+            rules::Tile::from((0, 0)),
+            rules::Tile::from((1, 1)),
+            rules::Tile::from((2, 2)),
             rules::Tile::from((3, 3))
         ];
         let mut boneyard = Boneyard::with(tiles);
-        
+
         // Peek at first tile
         let peeked_before = boneyard.peek();
         assert_eq!(peeked_before, Some(&rules::Tile::from((0, 0))));
-        
+
         // Shuffle - peek result may change since we shuffle all remaining tiles
         boneyard.shuffle();
-        
+
         // Should still have same count
         assert_eq!(boneyard.count(), 4);
-        
+
         // Peek might now show different tile
         let peeked_after = boneyard.peek();
         assert!(peeked_after.is_some());
-        
+
         // But should still contain all original tiles
         let mut drawn_tiles = Vec::new();
         while let Some(tile) = boneyard.draw() {
             drawn_tiles.push(tile);
         }
-        
+
         let expected_tiles = vec![
-            rules::Tile::from((0, 0)), 
-            rules::Tile::from((1, 1)), 
-            rules::Tile::from((2, 2)), 
+            rules::Tile::from((0, 0)),
+            rules::Tile::from((1, 1)),
+            rules::Tile::from((2, 2)),
             rules::Tile::from((3, 3))
         ];
-        
+
         assert_eq!(drawn_tiles.len(), expected_tiles.len());
         for tile in &expected_tiles {
             assert!(drawn_tiles.contains(tile));
@@ -710,26 +716,26 @@ mod tests {
     fn test_boneyard_draw_all_tiles() {
         let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 2, 6);
         let mut boneyard = Boneyard::new(&configuration);
-        
+
         let mut drawn_tiles = Vec::new();
         let initial_count = boneyard.count();
-        
+
         // Draw all tiles
         while let Some(tile) = boneyard.draw() {
             drawn_tiles.push(tile);
         }
-        
+
         // Should have drawn exactly the initial count
         assert_eq!(drawn_tiles.len(), initial_count);
         assert_eq!(boneyard.count(), 0);
         assert!(boneyard.is_empty());
-        
+
         // All drawn tiles should be valid for double-2 set
         for tile in &drawn_tiles {
             let (a, b) = tile.as_tuple();
             assert!(a <= 2 && b <= 2 && a <= b);
         }
-        
+
         // Should have no duplicates
         for i in 0..drawn_tiles.len() {
             for j in i+1..drawn_tiles.len() {

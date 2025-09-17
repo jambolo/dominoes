@@ -4,14 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = "4.5"
 dominoes-player = { path = "../dominoes-player" }
 dominoes-state = { path = "../dominoes-state" }
+ego-tree = "0.10"
 hidden-game-player = { path = "../hidden-game-player" }
 human-player = { path = "../human-player" }
-iced = { version = "0.13", features = ["canvas"] }
-iced_wgpu = "0.13"
 player = { path = "../player" }
+regex = "1.11"
 rules = { path = "../rules" }
+serde = "1.0"
+serde_json = "1.0"
 
 [[bin]]
 name = "dominoes"

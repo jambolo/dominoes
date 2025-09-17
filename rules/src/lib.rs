@@ -1,14 +1,14 @@
 //! # Dominoes Rules and Types
-//! 
+//!
 //! This crate provides the fundamental types, rules, and utilities for dominoes games.
-//! 
+//!
 //! ## Examples
 //! ```rust
 //! # use rules::{Configuration, Variation, Tile};
-//! 
+//!
 //! // Create a standard double-six game for 4 players
 //! let config = Configuration::new(4, Variation::Traditional, 6, 6);
-//! 
+//!
 //! // Work with individual tiles
 //! let tile = Tile::from((3, 5));
 //! println!("Tile: {}", tile); // Prints "3|5"
@@ -17,15 +17,16 @@
 
 pub mod tile;
 pub mod configuration;
+
 pub use tile::*;
 pub use configuration::*;
 
 /// Domino game variations
-/// 
+///
 /// # Examples
 /// ```rust
 /// # use rules::{Variation, default_starting_hand_size};
-/// 
+///
 /// // Different variations have different hand sizes
 /// assert_eq!(default_starting_hand_size(2, Variation::Traditional), 7);
 /// assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
@@ -40,6 +41,9 @@ pub enum Variation {
     Blind,
     FiveUp,
 }
+
+/// Maximum number of pips on a domino tile supported by this library
+pub const MAX_PIPS: u8 = 21;
 
 // All domino tiles in order.
 //
@@ -117,12 +121,12 @@ const DOUBLES: [u8; 22] = [
 /// Converts a domino tile tuple to its ordinal value.
 ///
 /// This function maps each domino tile to a unique u8 ordinal value 0 to the number of tiles - 1.
-/// 
+///
 /// # Arguments
-/// * `tile` - A domino tile where the first value ≤ second value (canonical form)
+/// * `tile` - A domino tile where the first value &le; second value (canonical form)
 ///
 /// # Returns
-/// THe ordinal value for the tile as u8
+/// The ordinal value for the tile as u8
 ///
 /// # Panics
 /// * If the input tuple is not in canonical form (i.e., if the first element is greater than the second).
@@ -131,7 +135,7 @@ const DOUBLES: [u8; 22] = [
 /// # Examples
 /// ```
 /// # use rules::tuple_to_ordinal;
-/// 
+///
 /// assert_eq!(tuple_to_ordinal((0, 0)), 0);
 /// assert_eq!(tuple_to_ordinal((0, 1)), 1);
 /// assert_eq!(tuple_to_ordinal((1, 1)), 2);
@@ -140,38 +144,38 @@ const DOUBLES: [u8; 22] = [
 /// ```
 pub const fn tuple_to_ordinal((a, b): (u8, u8)) -> u8 {
     assert!(a <= b, "Tile must be in canonical form (first <= second)");
-    
+
     // Use usize to prevent overflow during calculation
     let ordinal = (b as usize) * (b as usize + 1) / 2 + a as usize;
     assert!(ordinal <= u8::MAX as usize, "Ordinal exceeds u8::MAX");
-    
+
     ordinal as u8
 }
 
 /// Converts an ordinal to its corresponding tuple.
 ///
-/// This is the inverse operation of `tuple_to_ordinal()`. 
+/// This is the inverse operation of `tuple_to_ordinal()`.
 ///
-/// # Arguments  
+/// # Arguments
 /// * `ordinal` - The unique ordinal (0-252)
 ///
 /// # Returns
 /// The corresponding domino tuple (a, b)
 ///
 /// # Panics
-/// If `ordinal` is outside the valid range (>= 253)
+/// If `ordinal` is outside the valid range (&ge; 253)
 ///
 /// # Examples
 /// ```rust
 /// # use rules::ordinal_to_tuple;
-/// 
+///
 /// assert_eq!(ordinal_to_tuple(0), (0, 0));
 /// assert_eq!(ordinal_to_tuple(1), (0, 1));
 /// assert_eq!(ordinal_to_tuple(2), (1, 1));
 /// assert_eq!(ordinal_to_tuple(21), (0, 6));
 /// assert_eq!(ordinal_to_tuple(27), (6, 6));
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(1) performance.
 pub const fn ordinal_to_tuple(ordinal: u8) -> (u8, u8) {
@@ -192,13 +196,13 @@ pub const fn ordinal_to_tuple(ordinal: u8) -> (u8, u8) {
 /// # Examples
 /// ```rust
 /// # use rules::is_double_tuple;
-/// 
+///
 /// assert!(is_double_tuple((0, 0)));   // Double-blank
 /// assert!(is_double_tuple((6, 6)));   // Double-six
 /// assert!(!is_double_tuple((0, 1)));  // Not a double
 /// assert!(!is_double_tuple((2, 3)));  // Not a double
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(1) performance.
 pub const fn is_double_tuple((a, b): (u8, u8)) -> bool {
@@ -216,21 +220,21 @@ pub const fn is_double_tuple((a, b): (u8, u8)) -> bool {
 /// # Examples
 /// ```
 /// # use rules::is_double_ordinal;
-/// 
+///
 /// assert!(is_double_ordinal(0));   // (0,0)
-/// assert!(is_double_ordinal(2));   // (1,1)  
+/// assert!(is_double_ordinal(2));   // (1,1)
 /// assert!(is_double_ordinal(27));  // (6,6)
 /// assert!(!is_double_ordinal(1));  // (0,1)
 /// assert!(!is_double_ordinal(3));  // (0,2)
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(log n) performance via binary search.
 pub const fn is_double_ordinal(ordinal: u8) -> bool {
     // Manual binary search for const context
     let mut left = 0;
     let mut right = DOUBLES.len();
-    
+
     while left < right {
         let mid = (left + right) / 2;
         if DOUBLES[mid] < ordinal {
@@ -239,11 +243,11 @@ pub const fn is_double_ordinal(ordinal: u8) -> bool {
             right = mid;
         }
     }
-    
+
     left < DOUBLES.len() && DOUBLES[left] == ordinal
 }
 
-/// Returns true if the two tiles  can be attached
+/// Returns true if the two tiles can be attached
 ///
 /// # Arguments
 /// * `t0` - The first domino tile as a tuple (u8, u8)
@@ -258,20 +262,20 @@ pub const fn is_double_ordinal(ordinal: u8) -> bool {
 ///
 /// // Tiles with matching values can be attached
 /// assert!(can_attach_tuples((1, 2), (2, 3))); // Share 2
-/// assert!(can_attach_tuples((0, 5), (0, 4))); // Share 0  
+/// assert!(can_attach_tuples((0, 5), (0, 4))); // Share 0
 /// assert!(can_attach_tuples((3, 6), (1, 6))); // Share 6
-/// 
+///
 /// // Double tiles can attach to tiles with matching values
 /// assert!(can_attach_tuples((4, 4), (4, 1))); // Share 4
-/// 
+///
 /// // Tiles with no matching values cannot be attached
 /// assert!(!can_attach_tuples((1, 2), (3, 4))); // No common values
 /// assert!(!can_attach_tuples((0, 1), (2, 5))); // No common values
-/// 
+///
 /// // Order doesn't matter for attachment
 /// assert!(can_attach_tuples((2, 3), (1, 2))); // Same result as above
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(1) performance.
 pub const fn can_attach_tuples((a0, b0): (u8, u8), (a1, b1): (u8, u8)) -> bool {
@@ -293,20 +297,20 @@ pub const fn can_attach_tuples((a0, b0): (u8, u8), (a1, b1): (u8, u8)) -> bool {
 ///
 /// // Tiles with matching values can be attached
 /// assert!(can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((2, 3)))); // Share 2
-/// assert!(can_attach_ordinals(tuple_to_ordinal((0, 5)), tuple_to_ordinal((0, 4)))); // Share 0  
+/// assert!(can_attach_ordinals(tuple_to_ordinal((0, 5)), tuple_to_ordinal((0, 4)))); // Share 0
 /// assert!(can_attach_ordinals(tuple_to_ordinal((3, 6)), tuple_to_ordinal((1, 6)))); // Share 6
-/// 
+///
 /// // Double tiles can attach to tiles with matching values
 /// assert!(can_attach_ordinals(tuple_to_ordinal((4, 4)), tuple_to_ordinal((1, 4)))); // Share 4
-/// 
+///
 /// // Tiles with no matching values cannot be attached
 /// assert!(!can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((3, 4)))); // No common values
 /// assert!(!can_attach_ordinals(tuple_to_ordinal((0, 1)), tuple_to_ordinal((2, 5)))); // No common values
-/// 
+///
 /// // Order doesn't matter for attachment
 /// assert!(can_attach_ordinals(tuple_to_ordinal((2, 3)), tuple_to_ordinal((1, 2)))); // Same result as above
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(1) performance.
 pub const fn can_attach_ordinals(t0: u8, t1: u8) -> bool {
@@ -343,13 +347,12 @@ pub const fn can_attach_ordinals(t0: u8, t1: u8) -> bool {
 /// // Order doesn't matter for attachment
 /// assert!(can_attach_tile(Tile::from((2, 3)), Tile::from((1, 2)))); // Same result as above
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` with O(1) performance.
 pub const fn can_attach_tile(t0: Tile, t1: Tile) -> bool {
     can_attach_ordinals(t0.ordinal, t1.ordinal)
 }
-
 
 /// Returns the total number of tiles in a double-N domino set.
 ///
@@ -362,14 +365,14 @@ pub const fn can_attach_tile(t0: Tile, t1: Tile) -> bool {
 /// # Examples
 /// ```
 /// # use rules::set_size;
-/// 
+///
 /// assert_eq!(set_size(0), 1);   // Only (0,0)
-/// assert_eq!(set_size(1), 3);   // (0,0), (0,1), (1,1)  
+/// assert_eq!(set_size(1), 3);   // (0,0), (0,1), (1,1)
 /// assert_eq!(set_size(6), 28);  // Standard double-six set
 /// assert_eq!(set_size(9), 55);  // Double-nine set
 /// assert_eq!(set_size(12), 91); // Double-twelve set
 /// ```
-/// 
+///
 /// # Performance
 /// This is a `const fn` and can be evaluated at compile time.
 pub const fn set_size(n: u8) -> usize {
@@ -387,12 +390,12 @@ pub const fn set_size(n: u8) -> usize {
 /// # Examples
 /// ```
 /// # use rules::all_tiles_as_tuples;
-/// 
+///
 /// let tiles = all_tiles_as_tuples(2);
 /// assert_eq!(tiles, vec![
 ///     (0, 0), (0, 1), (1, 1), (0, 2), (1, 2), (2, 2)
 /// ]);
-/// 
+///
 /// let double_six = all_tiles_as_tuples(6);
 /// assert_eq!(double_six.len(), 28); // Standard domino set
 /// ```
@@ -402,7 +405,7 @@ pub fn all_tiles_as_tuples(set_id: u8) -> Vec<(u8, u8)> {
         .collect()
 }
 
-/// Returns a sorted Vec<Tile> containing all domino tiles for a given set
+/// Returns a sorted Vec containing all domino tiles for a given set
 ///
 /// # Arguments
 /// * `set_id` - ID of the set. Same as the highest value on the tiles.
@@ -413,15 +416,15 @@ pub fn all_tiles_as_tuples(set_id: u8) -> Vec<(u8, u8)> {
 /// # Examples
 /// ```
 /// # use rules::{all_tiles_as_tiles, Tile};
-/// 
+///
 /// let tiles = all_tiles_as_tiles(2);
 /// assert_eq!(tiles.len(), 6);
-/// 
+///
 /// // First few tiles in canonical order
 /// assert_eq!(tiles[0], Tile::from((0, 0))); // First tile
 /// assert_eq!(tiles[1], Tile::from((0, 1))); // Second tile
 /// assert_eq!(tiles[2], Tile::from((1, 1))); // Third tile
-/// 
+///
 /// let double_six = all_tiles_as_tiles(6);
 /// assert_eq!(double_six.len(), 28); // Standard domino set
 /// ```
@@ -440,10 +443,10 @@ pub fn all_tiles_as_tiles(set_id: u8) -> Vec<Tile> {
 /// # Examples
 /// ```
 /// # use rules::all_tiles_as_ordinals;
-/// 
+///
 /// let ordinals = all_tiles_as_ordinals(2);
 /// assert_eq!(ordinals, vec![0, 1, 2, 3, 4, 5]);
-/// 
+///
 /// let double_six = all_tiles_as_ordinals(6);
 /// assert_eq!(double_six.len(), 28);
 /// assert_eq!(double_six[0], 0);    // (0,0)
@@ -458,10 +461,10 @@ pub fn all_tiles_as_ordinals(set_id: u8) -> Vec<u8> {
 /// This function determines the initial hand size for each player based on the domino game variation and the number of players.
 ///
 /// # Hand Size Rules
-/// 
-/// * **Traditional, All-Fives, All-Sevens, Five-Up**: 
+///
+/// * **Traditional, All-Fives, All-Sevens, Five-Up**:
 ///   - 2 players: 7 tiles
-///   - 3-4 players: 6 tiles  
+///   - 3-4 players: 6 tiles
 ///   - 5+ players: 5 tiles
 /// * **Bergen**: Always 6 tiles regardless of player count
 /// * **Blind**:
@@ -480,16 +483,16 @@ pub fn all_tiles_as_ordinals(set_id: u8) -> Vec<u8> {
 /// # Examples
 /// ```
 /// # use rules::{default_starting_hand_size, Variation};
-/// 
+///
 /// // Traditional game with different player counts
 /// assert_eq!(default_starting_hand_size(2, Variation::Traditional), 7);
 /// assert_eq!(default_starting_hand_size(4, Variation::Traditional), 6);
 /// assert_eq!(default_starting_hand_size(6, Variation::Traditional), 5);
-/// 
+///
 /// // Bergen always uses 6 tiles
 /// assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
 /// assert_eq!(default_starting_hand_size(8, Variation::Bergen), 6);
-/// 
+///
 /// // Blind uses more tiles initially
 /// assert_eq!(default_starting_hand_size(2, Variation::Blind), 8);
 /// assert_eq!(default_starting_hand_size(3, Variation::Blind), 7);
@@ -537,16 +540,16 @@ mod tests {
         assert!(can_attach_tile(Tile::from((0, 5)), Tile::from((0, 4))));
         assert!(can_attach_tile(Tile::from((3, 6)), Tile::from((1, 6))));
         assert!(can_attach_tile(Tile::from((4, 4)), Tile::from((1, 4))));
-        
+
         assert!(!can_attach_tile(Tile::from((1, 2)), Tile::from((3, 4))));
         assert!(!can_attach_tile(Tile::from((0, 1)), Tile::from((2, 5))));
-        
+
         // Test ordinal-based attachment
         assert!(can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((2, 3))));
         assert!(can_attach_ordinals(tuple_to_ordinal((0, 5)), tuple_to_ordinal((0, 4))));
         assert!(can_attach_ordinals(tuple_to_ordinal((3, 6)), tuple_to_ordinal((1, 6))));
         assert!(can_attach_ordinals(tuple_to_ordinal((4, 4)), tuple_to_ordinal((1, 4))));
-        
+
         assert!(!can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((3, 4))));
         assert!(!can_attach_ordinals(tuple_to_ordinal((0, 1)), tuple_to_ordinal((2, 5))));
     }
@@ -568,15 +571,15 @@ mod tests {
     fn test_all_tiles_as_tuples_comprehensive() {
         let tiles_0 = all_tiles_as_tuples(0);
         assert_eq!(tiles_0, vec![(0, 0)]);
-        
+
         let tiles_1 = all_tiles_as_tuples(1);
         assert_eq!(tiles_1, vec![(0, 0), (0, 1), (1, 1)]);
-        
+
         let tiles_2 = all_tiles_as_tuples(2);
         assert_eq!(tiles_2, vec![
             (0, 0), (0, 1), (1, 1), (0, 2), (1, 2), (2, 2)
         ]);
-        
+
         let tiles_3 = all_tiles_as_tuples(3);
         assert_eq!(tiles_3.len(), 10);
         assert_eq!(tiles_3[0], (0, 0));
@@ -588,14 +591,14 @@ mod tests {
         let tiles_0 = all_tiles_as_tiles(0);
         assert_eq!(tiles_0.len(), 1);
         assert_eq!(tiles_0[0], Tile::from((0, 0)));
-        
+
         let tiles_2 = all_tiles_as_tiles(2);
         assert_eq!(tiles_2.len(), 6);
         assert_eq!(tiles_2[0], Tile::from((0, 0)));
         assert_eq!(tiles_2[1], Tile::from((0, 1)));
         assert_eq!(tiles_2[2], Tile::from((1, 1)));
         assert_eq!(tiles_2[5], Tile::from((2, 2)));
-        
+
         let tiles_6 = all_tiles_as_tiles(6);
         assert_eq!(tiles_6.len(), 28);
         assert_eq!(tiles_6[0], Tile::from((0, 0)));
@@ -606,10 +609,10 @@ mod tests {
     fn test_all_tiles_as_ordinals_comprehensive() {
         let ordinals_0 = all_tiles_as_ordinals(0);
         assert_eq!(ordinals_0, vec![0]);
-        
+
         let ordinals_2 = all_tiles_as_ordinals(2);
         assert_eq!(ordinals_2, vec![0, 1, 2, 3, 4, 5]);
-        
+
         let ordinals_6 = all_tiles_as_ordinals(6);
         assert_eq!(ordinals_6.len(), 28);
         assert_eq!(ordinals_6[0], 0);
@@ -624,26 +627,26 @@ mod tests {
         assert_eq!(default_starting_hand_size(4, Variation::Traditional), 6);
         assert_eq!(default_starting_hand_size(5, Variation::Traditional), 5);
         assert_eq!(default_starting_hand_size(8, Variation::Traditional), 5);
-        
+
         // AllFives variation (same as Traditional)
         assert_eq!(default_starting_hand_size(2, Variation::AllFives), 7);
         assert_eq!(default_starting_hand_size(4, Variation::AllFives), 6);
         assert_eq!(default_starting_hand_size(6, Variation::AllFives), 5);
-        
+
         // AllSevens variation (same as Traditional)
         assert_eq!(default_starting_hand_size(2, Variation::AllSevens), 7);
         assert_eq!(default_starting_hand_size(4, Variation::AllSevens), 6);
-        
+
         // FiveUp variation (same as Traditional)
         assert_eq!(default_starting_hand_size(2, Variation::FiveUp), 7);
         assert_eq!(default_starting_hand_size(4, Variation::FiveUp), 6);
-        
+
         // Bergen variation (always 6)
         assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
         assert_eq!(default_starting_hand_size(4, Variation::Bergen), 6);
         assert_eq!(default_starting_hand_size(8, Variation::Bergen), 6);
         assert_eq!(default_starting_hand_size(10, Variation::Bergen), 6);
-        
+
         // Blind variation
         assert_eq!(default_starting_hand_size(2, Variation::Blind), 8);
         assert_eq!(default_starting_hand_size(3, Variation::Blind), 7);
@@ -658,26 +661,26 @@ mod tests {
             ((0, 0), 0), ((0, 1), 1), ((1, 1), 2), ((0, 2), 3),
             ((1, 2), 4), ((2, 2), 5), ((0, 6), 21), ((6, 6), 27),
         ];
-        
+
         for ((a, b), expected_ordinal) in test_cases {
             assert_eq!(tuple_to_ordinal((a, b)), expected_ordinal);
             assert_eq!(ordinal_to_tuple(expected_ordinal), (a, b));
         }
-        
+
         // Test boundary cases
         assert_eq!(tuple_to_ordinal((0, 0)), 0);
         assert_eq!(tuple_to_ordinal((0, 21)), 231);
         assert_eq!(tuple_to_ordinal((21, 21)), 252);
         assert_eq!(ordinal_to_tuple(0), (0, 0));
         assert_eq!(ordinal_to_tuple(252), (21, 21));
-        
+
         // Test all ordinals are valid
         for ordinal in 0..=252 {
             let (a, b) = ordinal_to_tuple(ordinal);
             assert!(a <= b); // Should be in canonical form
             assert!(a <= 21 && b <= 21); // Should be within valid range
         }
-        
+
         // Test doubles
         for i in 0..=21 {
             let ordinal = tuple_to_ordinal((i, i));
@@ -691,18 +694,18 @@ mod tests {
         assert!(is_double_tuple((0, 0)));
         assert!(is_double_tuple((6, 6)));
         assert!(!is_double_tuple((0, 1)));
-        
+
         // Test ordinal double detection
         assert!(is_double_ordinal(0));  // (0,0)
         assert!(is_double_ordinal(27)); // (6,6)
         assert!(!is_double_ordinal(1)); // (0,1)
-        
+
         // Test all doubles
         for i in 0..=21 {
             let ordinal = tuple_to_ordinal((i, i));
             assert!(is_double_ordinal(ordinal));
         }
-        
+
         // Test some non-doubles
         assert!(!is_double_ordinal(1));   // (0,1)
         assert!(!is_double_ordinal(3));   // (0,2)
@@ -722,7 +725,7 @@ mod tests {
             Variation::Blind,
             Variation::FiveUp,
         ];
-        
+
         for variation in variations {
             let hand_size = default_starting_hand_size(2, variation);
             assert!(hand_size > 0);
