@@ -66,41 +66,33 @@ impl Tile {
     /// let tile = Tile::from((1, 3));
     /// assert_eq!(tile.as_tuple(), (1, 3));
     /// ```
-    pub const fn as_tuple(self) -> (u8, u8) {
+    pub const fn as_tuple(&self) -> (u8, u8) {
         ordinal_to_tuple(self.ordinal)
     }
-    /// Returns true if another Tile can be attached to this one
+
+    /// Returns which value on this tile matches the given tile and which does not, or None if neither matches.
     ///
     /// # Arguments
-    /// * `other` - The other tile
+    /// * `tile` - The tile to check
     ///
     /// # Returns
-    /// `true` if the tiles share at least one common value, `false` otherwise
+    /// (matching value, other value), or None if the tile doesn't match.
+    ///
+    /// # Notes
+    /// - It is not possible in a standard domino set for the result to be ambiguous.
     ///
     /// # Examples
     /// ```rust
     /// # use rules::Tile;
-    ///
-    /// // Tiles with matching values can be attached
-    /// assert!(Tile::from((1, 2)).can_attach(Tile::from((2, 3)))); // Share 2
-    /// assert!(Tile::from((0, 5)).can_attach(Tile::from((0, 4)))); // Share 0
-    /// assert!(Tile::from((3, 6)).can_attach(Tile::from((1, 6)))); // Share 6
-    ///
-    /// // Double tiles can attach to tiles with matching values
-    /// assert!(Tile::from((4, 4)).can_attach(Tile::from((1, 4)))); // Share 4
-    ///
-    /// // Tiles with no matching values cannot be attached
-    /// assert!(!Tile::from((1, 2)).can_attach(Tile::from((3, 4)))); // No common values
-    /// assert!(!Tile::from((0, 1)).can_attach(Tile::from((2, 5)))); // No common values
-    ///
-    /// // Order doesn't matter for attachment
-    /// assert!(Tile::from((2, 3)).can_attach(Tile::from((1, 2)))); // Same result as above
+    /// let tile = Tile::from((2, 5));
+    /// assert_eq!(tile.matches(Tile::from((5, 6))), Some((5, 2)));
+    /// assert_eq!(tile.matches(Tile::from((1, 2))), Some((2, 5)));
+    /// assert_eq!(tile.matches(Tile::from((0, 1))), None);
     /// ```
-    ///
-    /// # Performance
-    /// This is a `const fn` with O(1) performance.
-    pub const fn can_attach(self, other: Self) -> bool {
-        can_attach_tile(self, other)
+    pub const fn matches(&self, other: &Self) -> Option<(u8, u8)> {
+        let a = self.as_tuple();
+        let b: (u8, u8) = other.as_tuple();
+        matches_tuples(a, b)
     }
 
     /// Returns the score of the tile by adding up the pips on both sides.
@@ -288,23 +280,6 @@ mod tests {
         assert_eq!(Tile::new(1).as_tuple(), (0, 1));
         assert_eq!(Tile::new(27).as_tuple(), (6, 6));
         assert_eq!(Tile::new(21).as_tuple(), (0, 6));
-
-        // Test tile can_attach
-        assert!(Tile::from((1, 2)).can_attach(Tile::from((2, 3))));
-        assert!(Tile::from((0, 5)).can_attach(Tile::from((0, 4))));
-        assert!(Tile::from((3, 6)).can_attach(Tile::from((1, 6))));
-        assert!(Tile::from((4, 4)).can_attach(Tile::from((1, 4))));
-
-        // Test tiles that cannot attach
-        assert!(!Tile::from((1, 2)).can_attach(Tile::from((3, 4))));
-        assert!(!Tile::from((0, 1)).can_attach(Tile::from((2, 5))));
-
-        // Test order independence
-        assert!(Tile::from((2, 3)).can_attach(Tile::from((1, 2))));
-
-        // Test double attachment
-        assert!(Tile::from((5, 5)).can_attach(Tile::from((2, 5))));
-        assert!(Tile::from((5, 5)).can_attach(Tile::from((3, 5))));
 
         // Test from tuple
         let tile1 = Tile::from((1, 3));

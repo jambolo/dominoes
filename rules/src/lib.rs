@@ -247,111 +247,36 @@ pub const fn is_double_ordinal(ordinal: u8) -> bool {
     left < DOUBLES.len() && DOUBLES[left] == ordinal
 }
 
-/// Returns true if the two tiles can be attached
+/// Checks if two domino tuples match on either value.
+///
+/// A match occurs if either value of the first tuple equals either value of the second tuple.
 ///
 /// # Arguments
-/// * `t0` - The first domino tile as a tuple (u8, u8)
-/// * `t1` - The second domino tile as a tuple (u8, u8)
+/// * `a` - The first tuple
+/// * `b` - The second tuple
 ///
 /// # Returns
-/// `true` if the tiles share at least one common value, `false` otherwise
+/// `Some((matching_a_value, other_a_value))` if there is a match, `None` otherwise
+///
+/// # Notes
+/// - It is not possible in a standard domino set for the match to be ambiguous.
 ///
 /// # Examples
 /// ```rust
-/// # use rules::can_attach_tuples;
-///
-/// // Tiles with matching values can be attached
-/// assert!(can_attach_tuples((1, 2), (2, 3))); // Share 2
-/// assert!(can_attach_tuples((0, 5), (0, 4))); // Share 0
-/// assert!(can_attach_tuples((3, 6), (1, 6))); // Share 6
-///
-/// // Double tiles can attach to tiles with matching values
-/// assert!(can_attach_tuples((4, 4), (4, 1))); // Share 4
-///
-/// // Tiles with no matching values cannot be attached
-/// assert!(!can_attach_tuples((1, 2), (3, 4))); // No common values
-/// assert!(!can_attach_tuples((0, 1), (2, 5))); // No common values
-///
-/// // Order doesn't matter for attachment
-/// assert!(can_attach_tuples((2, 3), (1, 2))); // Same result as above
+/// # use rules::matches_tuples;
+/// assert_eq!(matches_tuples((2, 5), (5, 3)), Some((5, 2))); // Match on 5
+/// assert_eq!(matches_tuples((1, 4), (4, 4)), Some((4, 1))); // Match on 4
+/// assert_eq!(matches_tuples((0, 0), (0, 1)), Some((0, 0))); // Match on 0
+/// assert_eq!(matches_tuples((2, 3), (4, 5)), None);      // No match
 /// ```
-///
-/// # Performance
-/// This is a `const fn` with O(1) performance.
-pub const fn can_attach_tuples((a0, b0): (u8, u8), (a1, b1): (u8, u8)) -> bool {
-    a0 == a1 || a0 == b1 || b0 == a1 || b0 == b1
-}
-
-/// Returns true if the two tiles can be attached
-///
-/// # Arguments
-/// * `t0` - The first domino tile as an ordinal value
-/// * `t1` - The second domino tile as an ordinal value
-///
-/// # Returns
-/// `true` if the tiles share at least one common value, `false` otherwise
-///
-/// # Examples
-/// ```rust
-/// # use rules::{can_attach_ordinals, tuple_to_ordinal};
-///
-/// // Tiles with matching values can be attached
-/// assert!(can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((2, 3)))); // Share 2
-/// assert!(can_attach_ordinals(tuple_to_ordinal((0, 5)), tuple_to_ordinal((0, 4)))); // Share 0
-/// assert!(can_attach_ordinals(tuple_to_ordinal((3, 6)), tuple_to_ordinal((1, 6)))); // Share 6
-///
-/// // Double tiles can attach to tiles with matching values
-/// assert!(can_attach_ordinals(tuple_to_ordinal((4, 4)), tuple_to_ordinal((1, 4)))); // Share 4
-///
-/// // Tiles with no matching values cannot be attached
-/// assert!(!can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((3, 4)))); // No common values
-/// assert!(!can_attach_ordinals(tuple_to_ordinal((0, 1)), tuple_to_ordinal((2, 5)))); // No common values
-///
-/// // Order doesn't matter for attachment
-/// assert!(can_attach_ordinals(tuple_to_ordinal((2, 3)), tuple_to_ordinal((1, 2)))); // Same result as above
-/// ```
-///
-/// # Performance
-/// This is a `const fn` with O(1) performance.
-pub const fn can_attach_ordinals(t0: u8, t1: u8) -> bool {
-    let (a0, b0) = ordinal_to_tuple(t0);
-    let (a1, b1) = ordinal_to_tuple(t1);
-    a0 == a1 || a0 == b1 || b0 == a1 || b0 == b1
-}
-
-/// Returns true if the two tiles can be attached
-///
-/// # Arguments
-/// * `t0` - The first domino tile as a Tile
-/// * `t1` - The second domino tile as a Tile
-///
-/// # Returns
-/// `true` if the tiles share at least one common value, `false` otherwise
-///
-/// # Examples
-/// ```rust
-/// # use rules::{can_attach_tile, Tile};
-///
-/// // Tiles with matching values can be attached
-/// assert!(can_attach_tile(Tile::from((1, 2)), Tile::from((2, 3)))); // Share 2
-/// assert!(can_attach_tile(Tile::from((0, 5)), Tile::from((0, 4)))); // Share 0
-/// assert!(can_attach_tile(Tile::from((3, 6)), Tile::from((1, 6)))); // Share 6
-///
-/// // Double tiles can attach to tiles with matching values
-/// assert!(can_attach_tile(Tile::from((4, 4)), Tile::from((1, 4)))); // Share 4
-///
-/// // Tiles with no matching values cannot be attached
-/// assert!(!can_attach_tile(Tile::from((1, 2)), Tile::from((3, 4)))); // No common values
-/// assert!(!can_attach_tile(Tile::from((0, 1)), Tile::from((2, 5)))); // No common values
-///
-/// // Order doesn't matter for attachment
-/// assert!(can_attach_tile(Tile::from((2, 3)), Tile::from((1, 2)))); // Same result as above
-/// ```
-///
-/// # Performance
-/// This is a `const fn` with O(1) performance.
-pub const fn can_attach_tile(t0: Tile, t1: Tile) -> bool {
-    can_attach_ordinals(t0.ordinal, t1.ordinal)
+const fn matches_tuples(a: (u8, u8), b: (u8, u8)) -> Option<(u8, u8)> {
+    if a.0 == b.0 || a.0 == b.1 {
+        Some((a.0, a.1))
+    } else if a.1 == b.0 || a.1 == b.1 {
+        Some((a.1, a.0))
+    } else {
+        None
+    }
 }
 
 /// Returns the total number of tiles in a double-N domino set.
@@ -531,27 +456,6 @@ mod tests {
         assert_eq!(Variation::Traditional, Variation::Traditional);
         assert_ne!(Variation::Traditional, Variation::AllFives);
         assert_eq!(Variation::Bergen, Variation::Bergen);
-    }
-
-    #[test]
-    fn test_can_attach_tile_comprehensive() {
-        // Test Tile-based attachment
-        assert!(can_attach_tile(Tile::from((1, 2)), Tile::from((2, 3))));
-        assert!(can_attach_tile(Tile::from((0, 5)), Tile::from((0, 4))));
-        assert!(can_attach_tile(Tile::from((3, 6)), Tile::from((1, 6))));
-        assert!(can_attach_tile(Tile::from((4, 4)), Tile::from((1, 4))));
-
-        assert!(!can_attach_tile(Tile::from((1, 2)), Tile::from((3, 4))));
-        assert!(!can_attach_tile(Tile::from((0, 1)), Tile::from((2, 5))));
-
-        // Test ordinal-based attachment
-        assert!(can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((2, 3))));
-        assert!(can_attach_ordinals(tuple_to_ordinal((0, 5)), tuple_to_ordinal((0, 4))));
-        assert!(can_attach_ordinals(tuple_to_ordinal((3, 6)), tuple_to_ordinal((1, 6))));
-        assert!(can_attach_ordinals(tuple_to_ordinal((4, 4)), tuple_to_ordinal((1, 4))));
-
-        assert!(!can_attach_ordinals(tuple_to_ordinal((1, 2)), tuple_to_ordinal((3, 4))));
-        assert!(!can_attach_ordinals(tuple_to_ordinal((0, 1)), tuple_to_ordinal((2, 5))));
     }
 
     #[test]

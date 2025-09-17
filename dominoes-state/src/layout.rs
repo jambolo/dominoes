@@ -295,24 +295,18 @@ impl Layout {
     /// layout.attach(one_three, Some(1));
     /// ```
     pub fn attach(&mut self, tile: Tile, parent_index: Option<usize>) -> (u8, u8) {
-        let (a, b) = tile.as_tuple();
-
         let (end_value, created_count) = match parent_index {
             Some(parent_index) => {
+                // Normal case: tile is attached to an existing tile
                 assert!(parent_index < self.nodes.len() && self.open.contains_key(&parent_index));
 
                 let parent = &self.nodes[parent_index].tile;
 
                 // Determine the matched and open values
-                assert!(parent.can_attach(tile));
-                let (matched_value, open_value) = if parent.as_tuple().0 == a || parent.as_tuple().1 == a {
-                    (a, b)
-                } else {
-                    (b, a)
-                };
+                let (matched_value, open_value) = tile.matches(parent).expect("Tiles should be attachable");
 
                 // Add a new tile node to the layout
-                let tile_index = self.nodes.len();
+                let tile_index = self.nodes.len(); // Index of the new tile
                 self.nodes.push(LayoutNode {
                     tile,
                     parent: Some(parent_index),
@@ -347,6 +341,7 @@ impl Layout {
                 });
 
                 // Both ends are open for the first tile.
+                let (a, _) = tile.as_tuple();
                 self.open.insert(0, a);
                 self.open.insert(0, a);
                 self.end_counts[a as usize] += 2;
