@@ -93,7 +93,9 @@ impl<'a> DominoesGame<'a> {
             println!("\nIt's {player_name}'s turn");
             loop {
                 let (action, mut new_state) = self.player_mut(current_player_id).my_turn(&state);
-                println!("{player_name}'s action: {action}");
+                if !action.is_draw() {
+                    println!("{player_name}'s action: {action}");
+                }
 
                 // Determine if the game should end according to the variation
                 if let Some(winner) = self.game_is_over_by_variation(&new_state) {
@@ -177,6 +179,8 @@ impl<'a> DominoesGame<'a> {
                         (None, None) => {
                             // Neither have doubles, must redraw
                             println!("No doubles found. Both players must redraw.");
+                            self.alice.reset();
+                            self.bob.reset();
                             *state = DominoesState::new(self.configuration);
                             self.alice.set_up(state);
                             self.bob.set_up(state);

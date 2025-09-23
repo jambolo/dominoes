@@ -562,27 +562,24 @@ impl Layout {
     /// Recursive helper for formatting the layout as a string.
     fn fmt_r(&self, node: &LayoutNode, open: u8) -> String {
         let (a, b) = node.tile.as_tuple();
-        let (a, b) = if open == a { (a, b) } else { (b, a) }; // Swap if necessary (tiles are added left-to-right)
+        let (a, b) = if open == a { (a, b) } else { (b, a) }; // Swap if necessary (tiles are appended left-to-right)
 
         let mut result = format!("{a}|{b}");
 
         // Add the children recursively
-        match node.children.len() {
-            0 => {}, // Open end
-            1 => {
-                let child_node = &self.nodes[node.children[0]];
-                result.push('-');
+        if a == b && node.children.len() >= 1 {
+            // Double tile with children
+            result.push_str("=(");
+            for (i, &child) in node.children.iter().enumerate() {
+                let child_node = &self.nodes[child];
+                if i > 0 { result.push(','); }
                 result.push_str(&self.fmt_r(child_node, b));
-            },
-            _ => {
-                result.push_str("=(");
-                for (i, &child) in node.children.iter().enumerate() {
-                    let child_node = &self.nodes[child];
-                    if i > 0 { result.push(','); }
-                    result.push_str(&self.fmt_r(child_node, b));
-                }
-                result.push(')');
             }
+            result.push(')');
+        } else if node.children.len() == 1 {
+            let child_node = &self.nodes[node.children[0]];
+            result.push('-');
+            result.push_str(&self.fmt_r(child_node, b));
         }
 
         result
@@ -805,7 +802,7 @@ mod tests {
         layout.attach(three_six, Some(0));
         layout.attach(one_three, Some(1));
 
-        assert_eq!(layout.to_string(), "6|6-6|3-3|1");
+        assert_eq!(layout.to_string(), "6|6=(6|3-3|1)");
     }
 
     #[test]
@@ -841,7 +838,7 @@ mod tests {
         layout.attach(three_five, Some(2));    // Attach 3|5 to the double-3 (creates branching)
         layout.attach(two_five, Some(4));      // Attach 2|5 to the 3|5 tile
 
-        assert_eq!(layout.to_string(), "6|6-6|3-3|3=(3|1,3|5-5|2)");
+        assert_eq!(layout.to_string(), "6|6=(6|3-3|3=(3|1,3|5-5|2))");
     }
 
     #[test]

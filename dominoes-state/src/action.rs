@@ -170,6 +170,56 @@ impl Action {
             tile_played: None,
         }
     }
+
+    /// Checks if the action is a pass (no tiles drawn or played)
+    ///
+    /// # Returns
+    /// `true` if the action is a pass, `false` otherwise
+    /// # Examples
+    /// ```rust
+    /// # use dominoes_state::Action;
+    ///
+    /// let action = Action::pass(1);
+    /// assert!(action.is_pass());
+    /// ```
+    pub fn is_pass(&self) -> bool {
+        self.tile_drawn.is_none() && self.tile_played.is_none()
+    }
+
+    /// Checks if the action involves drawing a tile
+    ///
+    /// # Returns
+    /// `true` if a tile was drawn, `false` otherwise
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use dominoes_state::Action;
+    /// # use rules::Tile;
+    ///
+    /// let tile = Tile::from((2, 5));
+    /// let action = Action::draw(1, tile);
+    /// assert!(action.is_draw());
+    /// ```
+    pub fn is_draw(&self) -> bool {
+        self.tile_drawn.is_some()
+    }
+
+    /// Checks if the action involves playing a tile
+    ///
+    /// # Returns
+    /// `true` if a tile was played, `false` otherwise
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use dominoes_state::Action;
+    /// # use rules::Tile;
+    /// let tile = Tile::from((6, 6));
+    /// let action = Action::play(0, tile, Some(6));
+    /// assert!(action.is_play());
+    /// ```
+    pub fn is_play(&self) -> bool {
+        self.tile_played.is_some()
+    }
 }
 
 impl Display for Action {
@@ -179,7 +229,11 @@ impl Display for Action {
             write!(f, "draw {tile}")?;
         }
         if let Some((tile, end)) = &self.tile_played {
-            write!(f, "play {tile} on {end:?}")?;
+            if let Some(n) = *end {
+                write!(f, "play {tile} on {n}")?;
+            } else {
+                write!(f, "play {tile}")?;
+            }
         }
         if self.tile_drawn.is_none() && self.tile_played.is_none() {
             write!(f, "pass")?;

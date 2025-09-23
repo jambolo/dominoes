@@ -188,7 +188,6 @@ impl<'a> Player for HumanPlayer<'a> {
             if let Some(tile) = new_state.draw_tile() {
                 println!("You drew a tile: {tile}");
                 self.hand.add_tile(tile);
-                self.display_hand();
                 return (Action::draw(self.player_id, tile), new_state);
             } else {
                 println!("No playable tiles and boneyard is empty. Passing turn.");

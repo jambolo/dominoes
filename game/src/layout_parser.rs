@@ -2,28 +2,7 @@
 //!
 //! This module provides functionality to parse a layout specified in a string format into a tree structure.
 //!
-//! # Layout String Syntax (BNF)
-//! ```text
-//! <layout> ::= <chain>
-//! <chain> ::= <tile> | <double> "=" <group> | <tile> "-" <chain>
-//! <tile> ::= <number> "|" <number>        // x|y, x and y are different
-//! <double> ::= <number> "|" <number>      // x|x
-//! <group> ::= "(" <group> ")"
-//! <group> ::= <chain> | <chain> "," <chain> | <chain> "," <chain> "," <chain> // Up to 3 chains in a group
-//! <number> ::= "0" | "1" | ... | "MAX_PIPS"
-//! ```
-//! # Connection Rules
-//! - When tiles are connected with "-", the first number of the second tile must match the second number of the first tile (the
-//!   open end).
-//! - Double tiles (x|x) can only be followed by "=" and a group.
-//! - In groups following doubles, the first number of each first tile must match the double's value.
-//! - Non-double tiles cannot be followed by "=".
-//!
-//! # Examples
-//! - Single tile: `5|6`
-//! - Simple chain: `1|2-2|3`
-//! - Double tile with branches: `3|3=(3|4-4|5,3|6`
-//! - Layout with multiple doubles: `1|5-0|5-3|5-5|5=(4|5-2|5-5|6-3|6-6|6=(0|6-1|6-4|6-2|6))`
+//! See [`parse`] for detailed documentation on the layout string syntax and rules.
 
 use regex::Regex;
 use ego_tree::{NodeMut, NodeRef, Tree};
@@ -239,20 +218,33 @@ impl<'a> ParseState<'a> {
 /// This function parses a domino layout string according to the grammar defined in this module and returns a tree structure
 /// representing the layout. Each node in the tree contains a `Tile`.
 ///
-/// # Layout String Syntax
+/// # Layout String Syntax (BNF)
 /// The layout string syntax follows this grammar:
-/// - `<layout>` ::= `<chain>`
-/// - `<chain>` ::= `<tile>` | `<double>` | `<tile>` "-" `<chain>` | `<double>` "=" "(" `<group>` ")"
-/// - `<tile>` ::= `<number>` "|" `<number>`    // x|y, x and y are different
-/// - `<double>` ::= `<number>` "|" `<number>`  // x|x
-/// - `<group>` ::= `<chain>` | `<chain>` "," `<chain>` | `<chain>` "," `<chain>` "," `<chain>` (Up to 3 chains)
-/// - `<number>` ::= "0" | "1" | ... | "MAX_PIPS"
 ///
-/// # Validation Rules
+/// ```bnf
+/// - <layout> ::= <chain>
+/// - <chain> ::= <tile> | <double> | <tile> "-" <chain> | <double> "=" "(" <group> ")"
+/// - <tile> ::= <number> "|" <number>
+/// - <double> ::= <number> "|" <number>
+/// - <group> ::= <chain> | <chain> "," <chain> | <chain> "," <chain> "," <chain>
+/// - <number> ::= "0" | "1" | ... | "MAX_PIPS"
+/// ```
+///
+/// where,
+/// - The two numbers in a `<tile>` are different
+/// - The two numbers in a `<double>` are the same
+/// - A `<group>` contains 1 to 3 chains
 /// - When tiles are connected with "-", the left number of the succeeding tile must match the right number of the preceding
 ///   tile (the open end).
 /// - In the group following a double, the left number of each first tile of each chain must match the double's value.
 /// - Whitespace is ignored.
+///
+/// ## Valid Examples
+/// - Single tile: `5|6`
+/// - Simple chain: `1|2-2|3`
+/// - Double tile with branches: `3|3=(3|4-4|5,3|6)`
+/// - Double tile with single branch: `4|4=(4|5-5|6)`
+/// - Layout with multiple doubles: `1|5-0|5-3|5-5|5=(4|5-2|5-5|6-3|6-6|6=(0|6-1|6-4|6-2|6))`
 ///
 /// # Arguments
 /// * `input` - A string slice containing the layout to parse
@@ -267,6 +259,7 @@ impl<'a> ParseState<'a> {
 /// - Mismatched connections (tile ends don't connect properly)
 /// - Invalid syntax (missing parentheses, commas, etc.)
 /// - Non-double tiles followed by "="
+/// - Double tiles followed by "-"
 /// - Unexpected characters after the layout
 ///
 /// # Examples
@@ -282,6 +275,11 @@ impl<'a> ParseState<'a> {
 /// // Single tile
 /// let tree = parse("5|6").unwrap();
 /// ```
+///
+
+
+
+
 pub fn parse(input: &str) -> Result<Tree<Tile>, ParseError> {
     let mut state = ParseState::new(input);
     let layout = state.parse_chain(None)?;
