@@ -1,4 +1,4 @@
-//! Management of player actions
+//! Player actions module
 //!
 //! This module defines the `Action` and `History` structs for tracking player actions and game history in a dominoes game.
 
@@ -8,8 +8,8 @@ use rules::{self, Tile};
 
 /// Represents an action taken by a player
 ///
-/// An action captures what a player did during their turn, including any tiles drawn from the boneyard and any tiles played on the
-/// layout.
+/// An action captures what a player did during their turn, including any tiles drawn from the boneyard and any tiles played on
+/// the layout.
 ///
 /// # Examples
 /// ```rust

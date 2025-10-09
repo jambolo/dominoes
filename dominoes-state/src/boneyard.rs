@@ -1,4 +1,4 @@
-//! Boneyard functionality
+//! Boneyard module
 //!
 //! This module provides the `Boneyard` struct which manages the boneyard, a collection of domino tiles that can be drawn from
 //! during gameplay.

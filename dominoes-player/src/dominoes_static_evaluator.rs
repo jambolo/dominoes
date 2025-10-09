@@ -1,9 +1,8 @@
 //! Static evaluation of dominoes game states
 //!
-//! This module provides functionality to evaluate the current state of a dominoes game
-//! and determine the best possible move for a player based on static heuristics.
-//! The evaluation considers factors such as the number of playable tiles,
-//! the player's hand composition, and the potential future moves.
+//! This module provides functionality to evaluate the current state of a dominoes game and determine the best possible move for a
+//! player based on static heuristics. The evaluation considers factors such as the number of playable tiles, the player's hand
+//! composition, and the potential future moves.
 
 use static_assertions::const_assert;
 
@@ -25,9 +24,8 @@ const_assert!((_TOTAL_WEIGHT - 1.0).abs() < 5.0 * f32::EPSILON);
 
 /// A static evaluator for dominoes game states.
 ///
-/// This struct implements the `StaticEvaluator` trait for `DominoesState`, providing
-/// a weighted heuristic evaluation of a game state. The evaluation considers mobility,
-/// tile advantage, pip advantage, scoring potential, and blocking potential.
+/// This struct implements the `StaticEvaluator` trait for `DominoesState`, providing a weighted heuristic evaluation of a game
+/// state. The evaluation considers mobility, tile advantage, pip advantage, scoring potential, and blocking potential.
 ///
 /// # Examples
 /// ```rust

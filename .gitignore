@@ -13,3 +13,7 @@ Cargo.lock
 
 # VS Code
 .vscode/
+
+# Copilot
+.github/copilot-instructions.md
+.github/instructions/

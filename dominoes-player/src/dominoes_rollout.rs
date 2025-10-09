@@ -1,7 +1,8 @@
 //! Rollout implementation for the Dominoes game
 //!
-//! This module contains the rollout strategy for the Dominoes game, which is used during the MCTS
-//! process to simulate random games from a given state and evaluate the potential outcomes.
+//! This module contains the rollout algorithm for the game state analysis, which is used during the MCTS process to simulate
+//! random games from a given state and evaluate the potential outcomes.
+//!
 use rand::Rng;
 
 use hidden_game_player::mcts::Rollout;

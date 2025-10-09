@@ -1,3 +1,8 @@
+//! Dominoes game state implementation module.
+//!
+//! This module defines the `DominoesState` struct which implements the `State` trait from the `hidden_game_player` crate.
+//! It encapsulates the current state of a dominoes game, including the layout, boneyard, player turns, and game status.
+
 use crate::{Action, Boneyard, Layout, ZHash};
 use hidden_game_player::{PlayerId, State};
 use rules::{Configuration, Tile};

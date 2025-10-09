@@ -1,3 +1,9 @@
+//! AI player implementation.
+//!
+//! This module defines a computer player for dominoes games, implementing the Player trait.
+//! It uses Monte Carlo Tree Search (MCTS) for decision making and maintains
+//! knowledge of hidden tiles and opponent tile probabilities.
+
 use std::collections::HashMap;
 
 use dominoes_state::{Action, DominoesState};
@@ -6,8 +12,7 @@ use rules::{Configuration, Tile};
 use hidden_game_player::{mcts, State};
 use crate::{DominoesResponseGenerator, DominoesRollout};
 
-
-/// A concrete implementation of Player for dominoes games
+/// An AI implementation of Player for dominoes games
 #[derive(Debug, Clone)]
 pub struct DominoesPlayer<'a> {
     /// Player ID
