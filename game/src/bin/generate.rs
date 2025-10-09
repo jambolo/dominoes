@@ -3,8 +3,7 @@
 use std::u8;
 
 use clap::{Arg, Command as ClapCommand};
-use rules::{self, Configuration, Tile};
-use dominoes_state::{Boneyard, Layout};
+use rules::{self, Boneyard, Configuration, Layout, Tile};
 
 fn main() {
     // Parse command line arguments

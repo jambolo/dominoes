@@ -1,9 +1,0 @@
-[package]
-name = "human-player"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-dominoes-state = { path = "../dominoes-state" }
-player = { path = "../player" }
-rules = { path = "../rules" }

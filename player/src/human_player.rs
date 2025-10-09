@@ -1,7 +1,11 @@
+//! Human player implementation
+//!
+//! This module provides a concrete player implementation for human-controlled gameplay.
+
 use std::io::{self, Write};
 
 use dominoes_state::{Action, DominoesState};
-use player::{Hand, Player};
+use crate::{Hand, Player};
 use rules::{Configuration, Tile};
 
 /// A concrete implementation of Player for human players
@@ -11,8 +15,7 @@ use rules::{Configuration, Tile};
 ///
 /// # Examples
 /// ```rust
-/// # use human_player::HumanPlayer;
-/// # use player::Player;
+/// # use player::{HumanPlayer, Player};
 /// # use rules::Configuration;
 ///
 /// let config = Configuration::default();
@@ -50,8 +53,7 @@ impl<'a> HumanPlayer<'a> {
     /// # Examples
     ///
     /// ```rust
-    /// # use human_player::HumanPlayer;
-    /// # use player::Player;
+    /// # use player::{HumanPlayer, Player};
     /// # use rules::Configuration;
     ///
     /// let config = Configuration::default();

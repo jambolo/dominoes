@@ -8,13 +8,13 @@ use ego_tree;
 use serde::{Serialize, Deserialize, Deserializer, Serializer};
 use serde::de::{self, Visitor, MapAccess};
 
-use rules::{Configuration, Tile};
+use crate::{Configuration, Tile};
 
 /// A node in the domino layout graph representing a single placed tile.
 ///
 /// # Examples
 /// ```rust
-/// # use dominoes_state::LayoutNode;
+/// # use rules::LayoutNode;
 /// # use rules::Tile;
 ///
 /// let node = LayoutNode {
@@ -40,7 +40,7 @@ pub struct LayoutNode {
 ///
 /// # Examples
 /// ```rust
-/// # use dominoes_state::Layout;
+/// # use rules::Layout;
 /// # use rules::{Configuration, Tile};
 ///
 /// let config = Configuration::default();
@@ -189,7 +189,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::{Configuration, Variation};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
@@ -213,7 +213,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::Configuration;
     ///
     /// let config = Configuration::default();
@@ -237,7 +237,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::{Configuration, Tile};
     ///
     /// let config = Configuration::default();
@@ -276,7 +276,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::{Configuration, Variation, Tile};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
@@ -368,7 +368,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::{Configuration, Tile};
     /// let config = Configuration::default();
     /// let mut layout = Layout::new(&config);
@@ -405,7 +405,7 @@ impl Layout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Layout;
+    /// # use rules::Layout;
     /// # use rules::{Configuration, Tile};
     ///
     /// let config = Configuration::default();
@@ -609,7 +609,7 @@ impl Layout {
 ///
 /// # Examples
 /// ```rust
-/// # use dominoes_state::Layout;
+/// # use rules::Layout;
 /// # use rules::{Configuration, Variation, Tile};
 ///
 /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
@@ -680,7 +680,7 @@ mod tests {
 
     #[test]
     fn test_new_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let layout = Layout::new(&configuration);
         assert!(layout.nodes.is_empty());
         assert!(layout.open.is_empty());
@@ -688,7 +688,7 @@ mod tests {
     }
         #[test]
     fn test_attach_first_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
 
@@ -707,7 +707,7 @@ mod tests {
 
     #[test]
     fn test_attach_second_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -737,7 +737,7 @@ mod tests {
 
     #[test]
     fn test_attach_double_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let double_three = create_tile(3, 3);
@@ -755,7 +755,7 @@ mod tests {
 
     #[test]
     fn test_branching_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_three = create_tile(3, 3);
         let two_three = create_tile(2, 3);
@@ -774,14 +774,14 @@ mod tests {
 
     #[test]
     fn test_to_string_empty() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let layout = Layout::new(&configuration);
         assert_eq!(layout.to_string(), "");
     }
 
     #[test]
     fn test_to_string_single_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
 
@@ -792,7 +792,7 @@ mod tests {
 
     #[test]
     fn test_to_string_linear_chain() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -807,7 +807,7 @@ mod tests {
 
     #[test]
     fn test_to_string_branching() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_three = create_tile(3, 3);
         let two_three = create_tile(2, 3);
@@ -822,7 +822,7 @@ mod tests {
 
     #[test]
     fn test_to_string_complex_tree() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -844,7 +844,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "First node must be a double")]
     fn test_to_string_non_double_root_panics() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         // Manually create invalid layout with non-double root
         layout.nodes.push(LayoutNode {
@@ -858,7 +858,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_attach_to_nonexistent_parent() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let tile = create_tile(3, 6);
         layout.attach(tile, Some(5)); // Parent index 5 doesn't exist
@@ -867,7 +867,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_attach_first_tile_to_nonempty_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -879,7 +879,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_attach_to_parent_when_empty() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let tile = create_tile(3, 6);
         layout.attach(tile, Some(0)); // Should panic - layout is empty
@@ -887,7 +887,7 @@ mod tests {
 
     #[test]
     fn test_remove_from_open() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
 
@@ -902,7 +902,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Parent 5 not found in open list")]
     fn test_remove_from_open_invalid_parent() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         layout.remove_from_open(5, 6);
     }
@@ -910,7 +910,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Value 9 not found for parent 0")]
     fn test_remove_from_open_invalid_value() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         layout.attach(double_six, None);
@@ -919,7 +919,7 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Initially empty
@@ -938,7 +938,7 @@ mod tests {
 
     #[test]
     fn test_open_count() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Initially no open ends for any value
@@ -979,7 +979,7 @@ mod tests {
 
     #[test]
     fn test_open_count_complex_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Build: 4|4=(4|2,4|1-1|5)
@@ -1008,7 +1008,7 @@ mod tests {
 
     #[test]
     fn test_attach_return_values() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // First tile (double) should return (value, 2)
@@ -1032,7 +1032,7 @@ mod tests {
 
     #[test]
     fn test_layout_public_fields() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Test nodes field access
@@ -1063,7 +1063,7 @@ mod tests {
 
     #[test]
     fn test_attach_multiple_children_to_same_parent() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Start with double-4
@@ -1091,7 +1091,7 @@ mod tests {
 
     #[test]
     fn test_end_counts_consistency() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Build a complex layout and verify end_counts matches actual open entries
@@ -1125,7 +1125,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_attach_incompatible_tiles() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         let double_six = create_tile(6, 6);
@@ -1139,7 +1139,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_attach_non_double_as_first_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         let three_six = create_tile(3, 6);
@@ -1148,7 +1148,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_empty_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let layout = Layout::new(&configuration);
 
         assert!(layout.to_tree().is_none());
@@ -1156,7 +1156,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_single_tile() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
 
@@ -1169,7 +1169,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_linear_chain() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -1198,7 +1198,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_branching() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_three = create_tile(3, 3);
         let two_three = create_tile(2, 3);
@@ -1228,7 +1228,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_complex_structure() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_six = create_tile(6, 6);
         let three_six = create_tile(3, 6);
@@ -1278,7 +1278,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_node_order_preservation() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_four = create_tile(4, 4);
         let four_one = create_tile(1, 4);
@@ -1300,7 +1300,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_all_nodes_have_correct_parents() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let double_two = create_tile(2, 2);
         let two_five = create_tile(2, 5);
@@ -1330,7 +1330,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Non-root node must have parent")]
     fn test_to_tree_panics_on_invalid_layout() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Manually create an invalid layout with a non-root node having no parent
@@ -1350,7 +1350,7 @@ mod tests {
 
     #[test]
     fn test_to_tree_preserves_tile_data() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
         let tiles = vec![
             create_tile(6, 6),
@@ -1377,7 +1377,7 @@ mod tests {
 
     #[test]
     fn test_get_nodes_with_open_end() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
 
         // Test empty layout
         let layout = Layout::new(&configuration);
@@ -1457,7 +1457,7 @@ mod tests {
 
     #[test]
     fn test_layout_serialization_simple() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Create a simple layout: 6|6-3|6
@@ -1496,7 +1496,7 @@ mod tests {
 
     #[test]
     fn test_layout_serialization_complex() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Create a more complex layout: 4|4=(2|4, 4|1-1|5)
@@ -1535,7 +1535,7 @@ mod tests {
 
     #[test]
     fn test_layout_serialization_empty() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let layout = Layout::new(&configuration);
 
         // Serialize and deserialize empty layout
@@ -1550,7 +1550,7 @@ mod tests {
 
     #[test]
     fn test_layout_serialization_double_tiles() {
-        let configuration = rules::Configuration::default();
+        let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
 
         // Create layout step by step and debug each step

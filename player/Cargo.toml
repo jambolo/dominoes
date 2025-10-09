@@ -5,4 +5,7 @@ edition = "2024"
 
 [dependencies]
 dominoes-state = { path = "../dominoes-state" }
+hidden-game-player = { path = "../hidden-game-player" }
+rand = "0.9"
 rules = { path = "../rules" }
+static_assertions = "1.1"

@@ -18,7 +18,7 @@ use dominoes_state::DominoesState;
 ///
 /// # Examples
 /// ```rust
-/// use dominoes_player::DominoesRollout;
+/// use player::DominoesRollout;
 /// use dominoes_state::DominoesState;
 /// use rules::Configuration;
 /// use hidden_game_player::mcts::Rollout;
@@ -46,7 +46,7 @@ impl DominoesRollout {
     /// # Examples
     ///
     /// ```rust
-    /// use dominoes_player::DominoesRollout;
+    /// use player::DominoesRollout;
     ///
     /// let rollout = DominoesRollout::new();
     /// ```
@@ -68,7 +68,7 @@ impl Default for DominoesRollout {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_player::DominoesRollout;
+    /// # use player::DominoesRollout;
     ///
     /// let rollout = DominoesRollout::default();
     /// ```

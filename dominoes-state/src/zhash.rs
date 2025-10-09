@@ -33,7 +33,7 @@
 use std::sync::LazyLock;
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use crate::layout::Layout;
+use rules::Layout;
 
 /// Type alias for Zobrist hash values
 ///
@@ -95,8 +95,8 @@ impl ZHash {
     ///
     /// # Example
     /// ```rust
-    /// # use dominoes_state::{ZHash, Layout};
-    /// # use rules::{Configuration, Variation};
+    /// # use dominoes_state::ZHash;
+    /// # use rules::{Configuration, Layout, Variation};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
     /// let layout = Layout::new(&config);
@@ -525,7 +525,7 @@ mod tests {
         use rules::Configuration;
 
         let config = Configuration::default();
-        let layout = crate::Layout::new(&config);
+        let layout = rules::Layout::new(&config);
 
         // Test with player 0's turn
         let hash0 = ZHash::from_state(&layout, 0);
@@ -543,7 +543,7 @@ mod tests {
         use rules::Configuration;
 
         let config = Configuration::default();
-        let layout = crate::Layout::new(&config);
+        let layout = rules::Layout::new(&config);
 
         // Turn value 2 should panic
         ZHash::from_state(&layout, 2);

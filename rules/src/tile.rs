@@ -85,9 +85,9 @@ impl Tile {
     /// ```rust
     /// # use rules::Tile;
     /// let tile = Tile::from((2, 5));
-    /// assert_eq!(tile.matches(Tile::from((5, 6))), Some((5, 2)));
-    /// assert_eq!(tile.matches(Tile::from((1, 2))), Some((2, 5)));
-    /// assert_eq!(tile.matches(Tile::from((0, 1))), None);
+    /// assert_eq!(tile.matches(&Tile::from((5, 6))), Some((5, 2)));
+    /// assert_eq!(tile.matches(&Tile::from((1, 2))), Some((2, 5)));
+    /// assert_eq!(tile.matches(&Tile::from((0, 1))), None);
     /// ```
     pub const fn matches(&self, other: &Self) -> Option<(u8, u8)> {
         let a = self.as_tuple();

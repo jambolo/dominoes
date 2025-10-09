@@ -5,11 +5,9 @@ edition = "2024"
 
 [dependencies]
 clap = "4.5"
-dominoes-player = { path = "../dominoes-player" }
 dominoes-state = { path = "../dominoes-state" }
 ego-tree = { version = "0.10", features=["serde"] }
 hidden-game-player = { path = "../hidden-game-player" }
-human-player = { path = "../human-player" }
 iced = { version = "0.13", features = ["canvas", "image"] }
 player = { path = "../player" }
 regex = "1.11"

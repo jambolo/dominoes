@@ -10,7 +10,7 @@ use dominoes_state::{DominoesState, Action};
 ///
 /// # Examples
 /// ```rust
-/// # use dominoes_player::DominoesResponseGenerator;
+/// # use player::DominoesResponseGenerator;
 ///
 /// let generator = DominoesResponseGenerator::new();
 /// // Use generator with MCTS algorithm...
@@ -28,7 +28,7 @@ impl DominoesResponseGenerator {
     ///
     /// # Examples
     /// ```rust
-    /// use dominoes_player::DominoesResponseGenerator;
+    /// use player::DominoesResponseGenerator;
     ///
     /// let generator = DominoesResponseGenerator::new();
     /// ```
@@ -50,7 +50,7 @@ impl Default for DominoesResponseGenerator {
     /// # Examples
     ///
     /// ```rust
-    /// use dominoes_player::DominoesResponseGenerator;
+    /// use player::DominoesResponseGenerator;
     ///
     /// let generator = DominoesResponseGenerator::default();
     /// // Or using Default::default()

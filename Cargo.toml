@@ -1,11 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "dominoes-player",
     "dominoes-state",
     "game",
     "hidden-game-player",
-    "human-player",
     "player",
     "rules"
 ]

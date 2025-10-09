@@ -29,7 +29,7 @@ const_assert!((_TOTAL_WEIGHT - 1.0).abs() < 5.0 * f32::EPSILON);
 ///
 /// # Examples
 /// ```rust
-/// use dominoes_player::DominoesEvaluator;
+/// use player::DominoesEvaluator;
 /// use dominoes_state::DominoesState;
 /// use rules::Configuration;
 /// use hidden_game_player::StaticEvaluator;
@@ -49,7 +49,7 @@ impl DominoesEvaluator
     ///
     /// # Examples
     /// ```rust
-    /// use dominoes_player::DominoesEvaluator;
+    /// use player::DominoesEvaluator;
     /// let evaluator = DominoesEvaluator::new();
     /// ```
     pub fn new() -> Self

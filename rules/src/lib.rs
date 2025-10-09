@@ -15,11 +15,15 @@
 //! assert!(tile.is_double() == false);
 //! ```
 
-pub mod tile;
+pub mod boneyard;
 pub mod configuration;
+pub mod layout;
+pub mod tile;
 
-pub use tile::*;
+pub use boneyard::*;
 pub use configuration::*;
+pub use layout::*;
+pub use tile::*;
 
 /// Domino game variations
 ///
@@ -40,6 +44,29 @@ pub enum Variation {
     Bergen,
     Blind,
     FiveUp,
+}
+
+impl Variation {
+    /// Returns the name of the variation as a string.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use rules::Variation;
+    ///
+    /// assert_eq!(Variation::Traditional.name(), "Traditional");
+    /// assert_eq!(Variation::AllFives.name(), "All Fives");
+    /// assert_eq!(Variation::Bergen.name(), "Bergen");
+    /// ```
+    pub const fn name(self) -> &'static str {
+        match self {
+            Variation::Traditional => "Traditional",
+            Variation::AllFives => "All Fives",
+            Variation::AllSevens => "All Sevens",
+            Variation::Bergen => "Bergen",
+            Variation::Blind => "Blind",
+            Variation::FiveUp => "Five Up",
+        }
+    }
 }
 
 /// Maximum number of pips on a domino tile supported by this library
@@ -269,7 +296,7 @@ pub const fn is_double_ordinal(ordinal: u8) -> bool {
 /// assert_eq!(matches_tuples((0, 0), (0, 1)), Some((0, 0))); // Match on 0
 /// assert_eq!(matches_tuples((2, 3), (4, 5)), None);      // No match
 /// ```
-const fn matches_tuples(a: (u8, u8), b: (u8, u8)) -> Option<(u8, u8)> {
+pub const fn matches_tuples(a: (u8, u8), b: (u8, u8)) -> Option<(u8, u8)> {
     if a.0 == b.0 || a.0 == b.1 {
         Some((a.0, a.1))
     } else if a.1 == b.0 || a.1 == b.1 {

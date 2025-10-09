@@ -5,7 +5,7 @@
 //!
 //! # Example
 //! ```rust
-//! # use dominoes_state::Boneyard;
+//! # use rules::Boneyard;
 //! # use rules::{Configuration, Variation};
 //!
 //! // Create a standard double-six domino set
@@ -21,7 +21,7 @@
 //! }
 //! ```
 
-use rules::{Configuration, Tile};
+use crate::{Configuration, Tile};
 use rand::{seq::SliceRandom, rng};
 
 /// A boneyard implementation.
@@ -30,7 +30,7 @@ use rand::{seq::SliceRandom, rng};
 ///
 /// # Examples
 /// ```rust
-/// # use dominoes_state::Boneyard;
+/// # use rules::Boneyard;
 /// # use rules::{Configuration, Variation};
 ///
 /// // Create a standard double-six domino set
@@ -66,7 +66,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::{Configuration, Variation};
     ///
     /// // Creates a standard double-six domino set (0-6)
@@ -91,7 +91,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::Tile;
     ///
     /// let tiles: Vec<rules::Tile> = vec![Tile::from((0, 0)), Tile::from((1, 1)), Tile::from((2, 2))];
@@ -111,7 +111,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::Tile;
     ///
     /// let tiles: Vec<rules::Tile> = vec![
@@ -149,7 +149,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::{Configuration, Variation};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 1, 1);
@@ -184,7 +184,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::{Configuration, Variation};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 2, 2);
@@ -219,7 +219,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::Tile;
     ///
     /// let tiles: Vec<rules::Tile> = vec![Tile::from((0, 0))];
@@ -244,7 +244,7 @@ impl Boneyard {
     /// # Usage in Game Logic
     ///
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::{Configuration, Variation};
     ///
     /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
@@ -277,7 +277,7 @@ impl Boneyard {
     ///
     /// # Examples
     /// ```rust
-    /// # use dominoes_state::Boneyard;
+    /// # use rules::Boneyard;
     /// # use rules::Tile;
     ///
     /// let tiles: Vec<rules::Tile> = vec![Tile::from((1, 2)), Tile::from((3, 4)), Tile::from((5, 6))];
@@ -314,11 +314,10 @@ impl Boneyard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rules;
 
     #[test]
     fn test_boneyard_creation() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 6, 7);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 6, 7);
         let boneyard = Boneyard::new(&configuration);
         // Standard double-six domino set has 28 tiles: (n+1)*(n+2)/2
         assert_eq!(boneyard.count(), 28);
@@ -326,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_small_set() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 1, 3);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 1, 3);
         let boneyard = Boneyard::new(&configuration);
         // Should have tiles: (0,0), (0,1), (1,1) = 3 tiles
         assert_eq!(boneyard.count(), 3);
@@ -334,7 +333,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_draw() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 2, 6);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 2, 6);
         let mut boneyard = Boneyard::new(&configuration);
         let initial_count = boneyard.count();
 
@@ -354,13 +353,13 @@ mod tests {
 
     #[test]
     fn test_boneyard_empty() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 0, 3);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 0, 3);
         let mut boneyard = Boneyard::new(&configuration);
         // Should only have (0,0)
         assert_eq!(boneyard.count(), 1);
 
         let tile = boneyard.draw();
-        assert_eq!(tile, Some(rules::Tile::from((0, 0))));
+        assert_eq!(tile, Some(crate::Tile::from((0, 0))));
         assert_eq!(boneyard.count(), 0);
         assert!(boneyard.is_empty());
 
@@ -371,7 +370,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_peek() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 1, 3);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 1, 3);
         let boneyard = Boneyard::new(&configuration);
         let initial_count = boneyard.count();
 
@@ -383,33 +382,33 @@ mod tests {
 
     #[test]
     fn test_boneyard_with_tiles() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2))];
         let mut boneyard = Boneyard::with(tiles);
 
         assert_eq!(boneyard.count(), 3);
 
         // Should draw tiles in order
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((0, 0))));
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((1, 1))));
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((2, 2))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((0, 0))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((1, 1))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((2, 2))));
         assert_eq!(boneyard.draw(), None);
     }
 
     #[test]
     fn test_boneyard_shuffle_remaining_tiles() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3)), rules::Tile::from((4, 4))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw some tiles first
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((0, 0))));
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((1, 1))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((0, 0))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((1, 1))));
         assert_eq!(boneyard.count(), 3);
 
         // Record remaining tiles before shuffle
         let remaining_before: Vec<_> = (0..3).map(|_| boneyard.draw().unwrap()).collect();
 
         // Reset boneyard to same state
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3)), rules::Tile::from((4, 4))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
         let mut boneyard = Boneyard::with(tiles);
         boneyard.draw(); // (0, 0)
         boneyard.draw(); // (1, 1)
@@ -430,7 +429,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_empty() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw all tiles
@@ -446,11 +445,11 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_single_tile() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw one tile, leaving one remaining
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((0, 0))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((0, 0))));
         assert_eq!(boneyard.count(), 1);
 
         // Shuffle single remaining tile
@@ -458,13 +457,13 @@ mod tests {
 
         // Should still have the same tile
         assert_eq!(boneyard.count(), 1);
-        assert_eq!(boneyard.peek(), Some(&rules::Tile::from((1, 1))));
-        assert_eq!(boneyard.draw(), Some(rules::Tile::from((1, 1))));
+        assert_eq!(boneyard.peek(), Some(&crate::Tile::from((1, 1))));
+        assert_eq!(boneyard.draw(), Some(crate::Tile::from((1, 1))));
     }
 
     #[test]
     fn test_boneyard_shuffle_full() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
         let mut boneyard = Boneyard::with(tiles.clone());
 
         // Shuffle without drawing any tiles
@@ -490,7 +489,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_preserves_drawn_tiles() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3)), rules::Tile::from((4, 4))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw some tiles
@@ -501,8 +500,8 @@ mod tests {
         boneyard.shuffle();
 
         // Verify drawn tiles are still the same
-        assert_eq!(first, rules::Tile::from((0, 0)));
-        assert_eq!(second, rules::Tile::from((1, 1)));
+        assert_eq!(first, crate::Tile::from((0, 0)));
+        assert_eq!(second, crate::Tile::from((1, 1)));
 
         // Verify count is correct
         assert_eq!(boneyard.count(), 3);
@@ -512,7 +511,7 @@ mod tests {
         assert_eq!(remaining.len(), 3);
 
         // Should contain the expected remaining tiles
-        let expected_remaining = vec![rules::Tile::from((2, 2)), rules::Tile::from((3, 3)), rules::Tile::from((4, 4))];
+        let expected_remaining = vec![crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
         for tile in &expected_remaining {
             assert!(remaining.contains(tile));
         }
@@ -520,12 +519,12 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_multiple_times() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
         let mut boneyard = Boneyard::with(tiles.clone());
 
         // Draw one tile
         let first = boneyard.draw().unwrap();
-        assert_eq!(first, rules::Tile::from((0, 0)));
+        assert_eq!(first, crate::Tile::from((0, 0)));
 
         // Shuffle multiple times
         boneyard.shuffle();
@@ -536,7 +535,7 @@ mod tests {
         assert_eq!(boneyard.count(), 3);
 
         let remaining: Vec<_> = (0..3).map(|_| boneyard.draw().unwrap()).collect();
-        let expected_remaining = vec![rules::Tile::from((1, 1)), rules::Tile::from((2, 2)), rules::Tile::from((3, 3))];
+        let expected_remaining = vec![crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
 
         assert_eq!(remaining.len(), expected_remaining.len());
         for tile in &expected_remaining {
@@ -546,11 +545,11 @@ mod tests {
 
     #[test]
     fn test_boneyard_peek_empty() {
-        let tiles = vec![rules::Tile::from((0, 0))];
+        let tiles = vec![crate::Tile::from((0, 0))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Peek at the only tile
-        assert_eq!(boneyard.peek(), Some(&rules::Tile::from((0, 0))));
+        assert_eq!(boneyard.peek(), Some(&crate::Tile::from((0, 0))));
 
         // Draw the tile
         boneyard.draw();
@@ -562,7 +561,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_peek_consistency() {
-        let tiles = vec![rules::Tile::from((1, 2)), rules::Tile::from((3, 4)), rules::Tile::from((5, 6))];
+        let tiles = vec![crate::Tile::from((1, 2)), crate::Tile::from((3, 4)), crate::Tile::from((5, 6))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Multiple peeks should return the same tile
@@ -572,19 +571,19 @@ mod tests {
 
         assert_eq!(first_peek, second_peek);
         assert_eq!(second_peek, third_peek);
-        assert_eq!(first_peek, Some(&rules::Tile::from((1, 2))));
+        assert_eq!(first_peek, Some(&crate::Tile::from((1, 2))));
 
         // Draw should return the same tile that was peeked
         let drawn = boneyard.draw();
-        assert_eq!(drawn, Some(rules::Tile::from((1, 2))));
+        assert_eq!(drawn, Some(crate::Tile::from((1, 2))));
 
         // Peek should now show the next tile
-        assert_eq!(boneyard.peek(), Some(&rules::Tile::from((3, 4))));
+        assert_eq!(boneyard.peek(), Some(&crate::Tile::from((3, 4))));
     }
 
     #[test]
     fn test_boneyard_is_empty_states() {
-        let tiles = vec![rules::Tile::from((0, 0)), rules::Tile::from((1, 1))];
+        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1))];
         let mut boneyard = Boneyard::with(tiles);
 
         // Initially not empty
@@ -609,7 +608,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_count_accuracy() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 3, 7);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 3, 7);
         let mut boneyard = Boneyard::new(&configuration);
 
         // Initial count should match expected tile count for double-3 set
@@ -634,7 +633,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_with_empty_tiles() {
-        let tiles: Vec<rules::Tile> = vec![];
+        let tiles: Vec<crate::Tile> = vec![];
         let mut boneyard = Boneyard::with(tiles);
 
         // Should be empty from the start
@@ -650,7 +649,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_large_set() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 9, 10);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 9, 10);
         let mut boneyard = Boneyard::new(&configuration);
 
         // Double-9 set should have 55 tiles: (9+1)*(9+2)/2 = 10*11/2 = 55
@@ -672,16 +671,16 @@ mod tests {
     #[test]
     fn test_boneyard_shuffle_after_peek() {
         let tiles = vec![
-            rules::Tile::from((0, 0)),
-            rules::Tile::from((1, 1)),
-            rules::Tile::from((2, 2)),
-            rules::Tile::from((3, 3))
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3))
         ];
         let mut boneyard = Boneyard::with(tiles);
 
         // Peek at first tile
         let peeked_before = boneyard.peek();
-        assert_eq!(peeked_before, Some(&rules::Tile::from((0, 0))));
+        assert_eq!(peeked_before, Some(&crate::Tile::from((0, 0))));
 
         // Shuffle - peek result may change since we shuffle all remaining tiles
         boneyard.shuffle();
@@ -700,10 +699,10 @@ mod tests {
         }
 
         let expected_tiles = vec![
-            rules::Tile::from((0, 0)),
-            rules::Tile::from((1, 1)),
-            rules::Tile::from((2, 2)),
-            rules::Tile::from((3, 3))
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3))
         ];
 
         assert_eq!(drawn_tiles.len(), expected_tiles.len());
@@ -714,7 +713,7 @@ mod tests {
 
     #[test]
     fn test_boneyard_draw_all_tiles() {
-        let configuration = rules::Configuration::new(2, rules::Variation::Traditional, 2, 6);
+        let configuration = crate::Configuration::new(2, crate::Variation::Traditional, 2, 6);
         let mut boneyard = Boneyard::new(&configuration);
 
         let mut drawn_tiles = Vec::new();

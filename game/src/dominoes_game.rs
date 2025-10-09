@@ -2,8 +2,7 @@
 
 use dominoes_state::{Action, DominoesState, History};
 use hidden_game_player::{PlayerId, State};
-use human_player::HumanPlayer;
-use player::Player;
+use player::{HumanPlayer, Player};
 use rules::Configuration;
 
 /// An instance of a dominoes game
@@ -74,7 +73,10 @@ impl<'a> DominoesGame<'a> {
     /// game.run();
     /// ```
     pub fn run(&mut self) {
-        println!("Setting up the game...");
+        println!("Setting up the game...\n");
+        println!("Game Variation: {}", self.configuration.variation.name());
+        println!("Number of Players: {}", self.configuration.num_players);
+        println!("Domino Set: Double-{}", self.configuration.set_id);
 
         let mut state = DominoesState::new(self.configuration);
 
