@@ -1,9 +1,16 @@
 //! Randomly generates and prints a dominoes layout
 
-use std::u8;
-
 use clap::{Arg, Command as ClapCommand};
-use rules::{self, Boneyard, Configuration, Layout, Tile};
+use rules::{Boneyard, Configuration, Layout, Tile, Variation};
+
+const VARIATION_NAMES: &[(&str, Variation)] = &[
+    ("traditional", Variation::Traditional),
+    ("allfives", Variation::AllFives),
+    ("allsevens", Variation::AllSevens),
+    ("bergen", Variation::Bergen),
+    ("blind", Variation::Blind),
+    ("fiveup", Variation::FiveUp),
+];
 
 fn main() {
     // Parse command line arguments
@@ -12,49 +19,96 @@ fn main() {
     let matches = ClapCommand::new("Layout Generator")
         .version("1.0")
         .author("Jambolo <jambolo@users.noreply.github.com>")
-        .arg(Arg::new("max_size")
-            .help("Size of the layout (number of tiles)")
+        .about("Randomly generates and prints a dominoes layout for a given set and variation.")
+        .arg(Arg::new("size")
+            .help("Maximum size of the layout (number of tiles)")
             .required(false)
-            .index(1))
+            .index(1)
+            .value_parser(clap::value_parser!(usize)))
+        .arg(Arg::new("set")
+            .long("set")
+            .short('s')
+            .help("Domino set to use (e.g., 6 for double-six, 9 for double-nine)")
+            .required(false)
+            .value_parser(clap::value_parser!(u8)))
         .arg(Arg::new("json")
             .long("json")
             .short('j')
             .help("Output in JSON format")
             .action(clap::ArgAction::SetTrue))
+        .arg(Arg::new("variation")
+            .long("variation")
+            .short('v')
+            .help("Game variation to use")
+            .required(false)
+            .value_parser(VARIATION_NAMES.iter().map(|(name, _)| *name).collect::<Vec<_>>()))
+        .arg(Arg::new("doubles")
+            .long("doubles")
+            .short('d')
+            .help("Prioritize laying doubles when building the layout")
+            .action(clap::ArgAction::SetTrue))
         .get_matches();
 
-    let configuration = Configuration::default();
-    let set_size = configuration.set_size();
-    let max_size = parse_size_parameter(&matches, set_size);
+    let mut max_size = matches.get_one::<usize>("size").copied() .unwrap_or(usize::MAX);
+    let mut set_id = matches.get_one::<u8>("set").copied().unwrap_or(u8::MAX);
     let json_output = matches.get_flag("json");
+    let variation_str = matches.get_one::<String>("variation").map(|s| s.as_str());
+    let prioritize_doubles = matches.get_flag("doubles");
 
-    if max_size > set_size {
-        eprintln!("Error: The max_size of the layout ({}) cannot be greater than the number of tiles in the set ({})", max_size, set_size);
+    // Build the configuration
+    let num_players = 2;
+    let variation = match variation_str {
+        None => Variation::Traditional,
+        Some(name) => VARIATION_NAMES
+            .iter()
+            .find(|(n, _)| *n == name)
+            .map(|(_, v)| *v)
+            .unwrap_or_else(|| {
+                let valid = VARIATION_NAMES.iter().map(|(n, _)| *n).collect::<Vec<_>>().join(", ");
+                eprintln!("Error: Unknown variation '{}'. Valid options are: {}.", name, valid);
+                std::process::exit(1);
+            }),
+    };
+    let starting_hand_size = 7; // Doesn't matter for layout generation
+
+    if set_id == u8::MAX {
+        set_id = Configuration::DEFAULT_SET_ID;
+    } else if set_id > rules::MAX_PIPS {
+        eprintln!("Error: set must be between 0 and {} (inclusive)", rules::MAX_PIPS);
         std::process::exit(1);
     }
 
-    let layout = generate_random_layout(&configuration, max_size);
+    let configuration = Configuration::new(num_players, variation, set_id as u8, starting_hand_size);
 
+    // Get the maximum size of the layout to generate
+    if max_size == usize::MAX {
+        max_size = configuration.set_size();
+    } else if max_size > configuration.set_size() {
+        eprintln!("Error: The maximum size of the layout ({}) cannot be greater than the number of tiles in the set ({})",
+            max_size,
+            configuration.set_size());
+        std::process::exit(1);
+    }
+
+    // Generate the random layout
+    let layout = generate_random_layout(&configuration, max_size, prioritize_doubles);
+
+    // Print the layout
     if json_output {
-        unimplemented!();
+        // Output the layout as JSON using serde_json
+        match serde_json::to_string(&layout) {
+            Ok(json) => println!("{json}"),
+            Err(e) => {
+                eprintln!("Error serializing layout to JSON: {}", e);
+                std::process::exit(1);
+            }
+        }
     } else {
         println!("{}", layout.to_string());
     }
 }
 
-fn parse_size_parameter(matches: &clap::ArgMatches, default_size: usize) -> usize {
-    if let Some(size_str) = matches.get_one::<String>("max_size") {
-        size_str.parse()
-            .unwrap_or_else(|_| {
-                eprintln!("Error: Size must be a valid number");
-                std::process::exit(1);
-            })
-    } else {
-        default_size
-    }
-}
-
-fn generate_random_layout(configuration: &Configuration, max_size: usize) -> Layout {
+fn generate_random_layout(configuration: &Configuration, max_size: usize, prioritize_doubles: bool) -> Layout {
     let mut boneyard = Boneyard::new(&configuration);
 
     let mut layout = Layout::new(&configuration);
@@ -79,14 +133,13 @@ fn generate_random_layout(configuration: &Configuration, max_size: usize) -> Lay
         while made_progress {
             // Find the first tile in the hand that can be attached to the layout by iterating through the hand looking for a
             // tile that has values that match the layout's open ends
-            let mut found = None;
-            for tile in &hand {
-                let optional_index = can_attach(&layout, tile);
-                if let Some(index) = optional_index {
-                    found = Some((*tile, index));
-                    break;
-                }
-            }
+            let found = if prioritize_doubles {
+                find_playable_tile(&layout, &hand, true)
+                    .or_else(|| find_playable_tile(&layout, &hand, false))
+            } else {
+                find_playable_tile(&layout, &hand, false)
+            };
+
             if let Some((tile, index)) = found {
                 // Attach the tile to the layout at the found index
                 layout.attach(tile, Some(index));
@@ -118,17 +171,28 @@ fn generate_random_layout(configuration: &Configuration, max_size: usize) -> Lay
     layout
 }
 
+/// Find a tile in the hand the index of a node in the layout where the tile can be attached, if any.
+fn find_playable_tile(layout: &Layout, hand: &Vec<Tile>, doubles_only: bool) -> Option<(Tile, usize)> {
+    for tile in hand {
+        if !doubles_only || tile.is_double() {
+            if let Some(index) = can_attach(layout, tile) {
+                return Some((*tile, index));
+            }
+        }
+    }
+    None
+}
+
 fn find_and_remove_tile(hand: &mut Vec<Tile>, tile: Tile) {
     if let Some(pos) = hand.iter().position(|&t| t == tile) {
         hand.swap_remove(pos);
     }
 }
 
+/// Returns the index of a node in the layout where the tile can be attached, if any.
+/// Checks both ends of the tile for a match with any open end in the layout.
 fn can_attach(layout: &Layout, tile: &Tile) -> Option<usize> {
     let (a, b) = tile.into();
-    any_node_with_open_end(&layout, a).or_else(|| any_node_with_open_end(layout, b))
-}
-
-fn any_node_with_open_end(layout: &Layout, end: u8) -> Option<usize> {
-    layout.get_nodes_with_open_end(end).first().cloned()
+    layout.get_nodes_with_open_end(a).first().copied()
+        .or_else(|| layout.get_nodes_with_open_end(b).first().copied())
 }

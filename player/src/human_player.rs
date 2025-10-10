@@ -99,7 +99,7 @@ impl<'a> HumanPlayer<'a> {
             }
 
             // Get end selection
-            print!("Choose an end (0-{}): ", self.configuration.set_id);
+            print!("Choose an end (0-{}): ", self.configuration.set_id());
             io::stdout().flush().unwrap();
 
             let mut end_input = String::new();
@@ -108,7 +108,7 @@ impl<'a> HumanPlayer<'a> {
                 .expect("Failed to read input");
 
             let end: u8 = match end_input.trim().parse() {
-                Ok(end_val) if end_val <= self.configuration.set_id => end_val,
+                Ok(end_val) if end_val <= self.configuration.set_id() => end_val,
                 _ => {
                     println!("Invalid end value. Please try again.");
                     continue;
@@ -163,7 +163,7 @@ impl<'a> HumanPlayer<'a> {
     // Draw the starting hand size number of tiles from the boneyard
     fn draw_starting_hand(&mut self, state: &mut DominoesState) {
         // Draw the starting hand size number of tiles from the boneyard
-        let hand_size = self.configuration.starting_hand_size;
+        let hand_size = self.configuration.starting_hand_size();
         for _ in 0..hand_size {
             let tile = state.draw_tile().expect("Failed to draw tile during setup");
             self.hand.add_tile(tile);
@@ -269,12 +269,12 @@ mod tests {
 
         // Test that HumanPlayer stores the configuration reference correctly
         // This verifies our constructor works and configuration is accessible
-        assert_eq!(player.configuration.num_players, configuration.num_players);
-        assert_eq!(player.configuration.variation, configuration.variation);
-        assert_eq!(player.configuration.set_id, configuration.set_id);
+        assert_eq!(player.configuration.num_players(), configuration.num_players());
+        assert_eq!(player.configuration.variation(), configuration.variation());
+        assert_eq!(player.configuration.set_id(), configuration.set_id());
         assert_eq!(
-            player.configuration.starting_hand_size,
-            configuration.starting_hand_size
+            player.configuration.starting_hand_size(),
+            configuration.starting_hand_size()
         );
     }
 
@@ -305,12 +305,11 @@ mod tests {
         }
 
         // Test with different variation
-        use rules::default_starting_hand_size;
         let configuration_blind = Configuration::new(
             2,
             rules::Variation::Blind,
             6,
-            default_starting_hand_size(2, rules::Variation::Blind),
+            Configuration::default_starting_hand_size(2, rules::Variation::Blind),
         );
         let mut player_blind = HumanPlayer::new(0, &configuration_blind, "Test Player");
         let mut state_blind = DominoesState::new(&configuration_blind);
@@ -333,12 +332,12 @@ mod tests {
         assert!(player.hand.tiles().is_empty());
 
         // Test configuration reference is stored correctly
-        assert_eq!(player.configuration.num_players, configuration.num_players);
-        assert_eq!(player.configuration.variation, configuration.variation);
-        assert_eq!(player.configuration.set_id, configuration.set_id);
+        assert_eq!(player.configuration.num_players(), configuration.num_players());
+        assert_eq!(player.configuration.variation(), configuration.variation());
+        assert_eq!(player.configuration.set_id(), configuration.set_id());
         assert_eq!(
-            player.configuration.starting_hand_size,
-            configuration.starting_hand_size
+            player.configuration.starting_hand_size(),
+            configuration.starting_hand_size()
         );
     }
 
@@ -384,20 +383,20 @@ mod tests {
         let config_traditional = Configuration::new(2, rules::Variation::Traditional, 6, 7);
         let player_traditional = HumanPlayer::new(0, &config_traditional, "Traditional Player");
         assert_eq!(
-            player_traditional.configuration.variation,
+            player_traditional.configuration.variation(),
             rules::Variation::Traditional
         );
-        assert_eq!(player_traditional.configuration.starting_hand_size, 7);
+        assert_eq!(player_traditional.configuration.starting_hand_size(), 7);
 
         let config_blind = Configuration::new(4, rules::Variation::Blind, 9, 10);
         let player_blind = HumanPlayer::new(1, &config_blind, "Blind Player");
         assert_eq!(
-            player_blind.configuration.variation,
+            player_blind.configuration.variation(),
             rules::Variation::Blind
         );
-        assert_eq!(player_blind.configuration.starting_hand_size, 10);
-        assert_eq!(player_blind.configuration.num_players, 4);
-        assert_eq!(player_blind.configuration.set_id, 9);
+        assert_eq!(player_blind.configuration.starting_hand_size(), 10);
+        assert_eq!(player_blind.configuration.num_players(), 4);
+        assert_eq!(player_blind.configuration.set_id(), 9);
     }
 
     #[test]

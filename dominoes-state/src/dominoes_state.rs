@@ -769,13 +769,13 @@ mod tests {
         state.pass(); // Player 2 passes
 
         // In a 2-player game, this might indicate game should end
-        assert_eq!(state.consecutive_passes as usize, configuration.num_players);
+        assert_eq!(state.consecutive_passes as usize, configuration.num_players());
 
         // But the pass method itself doesn't end the game
         assert!(!state.game_is_over);
 
         // Game logic would need to check this condition and call mark_game_over
-        if state.consecutive_passes as usize >= configuration.num_players {
+        if state.consecutive_passes as usize >= configuration.num_players() {
             state.mark_game_over(None); // End in draw due to all players passing
         }
 

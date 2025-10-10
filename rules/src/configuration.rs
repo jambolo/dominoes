@@ -15,32 +15,36 @@ use crate::*;
 /// // Create a standard 4-player double-six game
 /// let config = Configuration::new(4, Variation::Traditional, 6, 6);
 /// assert_eq!(config.set_size(), 28);
-/// assert_eq!(config.num_players, 4);
+/// assert_eq!(config.num_players(), 4);
 ///
 /// // Create a 2-player double-nine All-Fives game
 /// let config = Configuration::new(2, Variation::AllFives, 9, 7);
 /// assert_eq!(config.set_size(), 55);
-/// assert_eq!(config.variation, Variation::AllFives);
+/// assert_eq!(config.variation(), Variation::AllFives);
 ///
 /// // Use default configuration (2-player Traditional double-six)
 /// let default_config = Configuration::default();
-/// assert_eq!(default_config.starting_hand_size, 7);
+/// assert_eq!(default_config.starting_hand_size(), 7);
 /// ```
 #[derive(Debug, Clone)]
 pub struct Configuration {
     /// The game variation being played
-    pub variation: Variation,
-    /// The ID of the can_attach_tuples. Same as the highest tile value.
-    pub set_id: u8,
+    variation: Variation,
+    /// The ID of the dominoes set. Same as the highest pip value.
+    set_id: u8,
     /// Number of tiles each player starts with
-    pub starting_hand_size: usize,
+    starting_hand_size: usize,
     /// Number of players in the game
-    pub num_players: usize,
+    num_players: usize,
     /// Complete set of all tiles available for this game
-    pub tiles: Vec<Tile>,
+    tiles: Vec<Tile>,
 }
 
 impl Configuration {
+    pub const DEFAULT_NUM_PLAYERS: usize = 2;
+    pub const DEFAULT_VARIATION: Variation = Variation::Traditional;
+    pub const DEFAULT_SET_ID: u8 = 6;
+
     /// Creates a new configuration
     ///
     /// # Arguments
@@ -55,20 +59,20 @@ impl Configuration {
     ///
     /// # Examples
     /// ```
-    /// # use rules::{Configuration, Variation, default_starting_hand_size};
+    /// # use rules::{Configuration, Variation};
     ///
     /// // Standard double-six game for 4 players
     /// let config = Configuration::new(
     ///     4,
     ///     Variation::Traditional,
     ///     6,
-    ///     default_starting_hand_size(4, Variation::Traditional)
+    ///     Configuration::default_starting_hand_size(4, Variation::Traditional)
     /// );
     ///
     /// // Double-twelve All-Fives game for 2 players
     /// let big_game = Configuration::new(2, Variation::AllFives, 12, 10);
     /// assert_eq!(big_game.set_size(), 91);
-    /// assert_eq!(big_game.variation, Variation::AllFives);
+    /// assert_eq!(big_game.variation(), Variation::AllFives);
     /// ```
     pub fn new(num_players: usize, variation: Variation, set_id: u8, starting_hand_size: usize) -> Self {
         assert!(num_players > 1, "Must have at least 2 players");
@@ -83,6 +87,31 @@ impl Configuration {
             num_players,
             tiles,
         }
+    }
+
+    /// Returns the game variation being played.
+    pub fn variation(&self) -> Variation {
+        self.variation
+    }
+
+    /// Returns the ID of the dominoes set.
+    pub fn set_id(&self) -> u8 {
+        self.set_id
+    }
+
+    /// Returns the number of tiles each player starts with.
+    pub fn starting_hand_size(&self) -> usize {
+        self.starting_hand_size
+    }
+
+    /// Returns the number of players in the game.
+    pub fn num_players(&self) -> usize {
+        self.num_players
+    }
+
+    /// Returns the complete set of all tiles available for this game.
+    pub fn tiles(&self) -> &[Tile] {
+        &self.tiles
     }
 
     /// Returns the total number of tiles in this game's domino set.
@@ -120,6 +149,25 @@ impl Configuration {
     pub fn all_tiles(&self) -> &[Tile] {
         &self.tiles
     }
+
+    /// Returns the default starting hand size for a given number of players and variation.
+    pub fn default_starting_hand_size(num_players: usize, variation: Variation) -> usize {
+        match variation {
+            Variation::Bergen => 6,
+            Variation::Blind => match num_players {
+                2 => 8,
+                3 => 7,
+                4..=8 => 6,
+                _ => 5,
+            },
+            _ => match num_players {
+                2 => 7,
+                3..=4 => 6,
+                5..=8 => 5,
+                _ => 4,
+            },
+        }
+    }
 }
 
 /// Provides a typical configuration.
@@ -137,23 +185,19 @@ impl Configuration {
 /// # use rules::{Configuration, Variation};
 ///
 /// let config = Configuration::default();
-/// assert_eq!(config.num_players, 2);
-/// assert_eq!(config.variation, Variation::Traditional);
-/// assert_eq!(config.set_id, 6);
-/// assert_eq!(config.starting_hand_size, 7);
+/// assert_eq!(config.num_players(), 2);
+/// assert_eq!(config.variation(), Variation::Traditional);
+/// assert_eq!(config.set_id(), 6);
+/// assert_eq!(config.starting_hand_size(), 7);
 /// assert_eq!(config.set_size(), 28);
 /// ```
 impl Default for Configuration {
     fn default() -> Self {
-        const NUM_PLAYERS: usize = 2;
-        const VARIATION: Variation = Variation::Traditional;
-        const SET_ID: u8 = 6;
-
         Self::new(
-            NUM_PLAYERS,
-            VARIATION,
-            SET_ID,
-            default_starting_hand_size(NUM_PLAYERS, VARIATION),
+            Self::DEFAULT_NUM_PLAYERS,
+            Self::DEFAULT_VARIATION,
+            Self::DEFAULT_SET_ID,
+            Configuration::default_starting_hand_size(Self::DEFAULT_NUM_PLAYERS, Self::DEFAULT_VARIATION),
         )
     }
 }

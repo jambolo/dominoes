@@ -29,12 +29,12 @@ pub use tile::*;
 ///
 /// # Examples
 /// ```rust
-/// # use rules::{Variation, default_starting_hand_size};
+/// # use rules::{Variation, Configuration};
 ///
 /// // Different variations have different hand sizes
-/// assert_eq!(default_starting_hand_size(2, Variation::Traditional), 7);
-/// assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
-/// assert_eq!(default_starting_hand_size(2, Variation::Blind), 8);
+/// assert_eq!(Configuration::default_starting_hand_size(2, Variation::Traditional), 7);
+/// assert_eq!(Configuration::default_starting_hand_size(2, Variation::Bergen), 6);
+/// assert_eq!(Configuration::default_starting_hand_size(2, Variation::Blind), 8);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Variation {
@@ -407,66 +407,6 @@ pub fn all_tiles_as_tiles(set_id: u8) -> Vec<Tile> {
 pub fn all_tiles_as_ordinals(set_id: u8) -> Vec<u8> {
     (0..set_size(set_id) as u8).collect()
 }
-
-/// Returns the default starting hand size based on game variation and player count.
-///
-/// This function determines the initial hand size for each player based on the domino game variation and the number of players.
-///
-/// # Hand Size Rules
-///
-/// * **Traditional, All-Fives, All-Sevens, Five-Up**:
-///   - 2 players: 7 tiles
-///   - 3-4 players: 6 tiles
-///   - 5+ players: 5 tiles
-/// * **Bergen**: Always 6 tiles regardless of player count
-/// * **Blind**:
-///   - 2 players: 8 tiles
-///   - 3 players: 7 tiles
-///   - 4 players: 6 tiles
-///   - 5+ players: 5 tiles
-///
-/// # Arguments
-/// * `num_players` - The number of players in the game
-/// * `variation` - The game variation being played
-///
-/// # Returns
-/// The number of tiles each player should start with
-///
-/// # Examples
-/// ```
-/// # use rules::{default_starting_hand_size, Variation};
-///
-/// // Traditional game with different player counts
-/// assert_eq!(default_starting_hand_size(2, Variation::Traditional), 7);
-/// assert_eq!(default_starting_hand_size(4, Variation::Traditional), 6);
-/// assert_eq!(default_starting_hand_size(6, Variation::Traditional), 5);
-///
-/// // Bergen always uses 6 tiles
-/// assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
-/// assert_eq!(default_starting_hand_size(8, Variation::Bergen), 6);
-///
-/// // Blind uses more tiles initially
-/// assert_eq!(default_starting_hand_size(2, Variation::Blind), 8);
-/// assert_eq!(default_starting_hand_size(3, Variation::Blind), 7);
-/// ```
-pub const fn default_starting_hand_size(num_players: usize, variation: Variation) -> usize {
-    use Variation::*;
-    match variation {
-        Traditional | AllFives | AllSevens | FiveUp => match num_players {
-            2 => 7,
-            3 | 4 => 6,
-            _ => 5,
-        },
-        Bergen => 6,
-        Blind => match num_players {
-            2 => 8,
-            3 => 7,
-            4 => 6,
-            _ => 5,
-        },
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -553,37 +493,37 @@ mod tests {
     #[test]
     fn test_default_starting_hand_size_comprehensive() {
         // Traditional variation
-        assert_eq!(default_starting_hand_size(2, Variation::Traditional), 7);
-        assert_eq!(default_starting_hand_size(3, Variation::Traditional), 6);
-        assert_eq!(default_starting_hand_size(4, Variation::Traditional), 6);
-        assert_eq!(default_starting_hand_size(5, Variation::Traditional), 5);
-        assert_eq!(default_starting_hand_size(8, Variation::Traditional), 5);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::Traditional), 7);
+        assert_eq!(Configuration::default_starting_hand_size(3, Variation::Traditional), 6);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::Traditional), 6);
+        assert_eq!(Configuration::default_starting_hand_size(5, Variation::Traditional), 5);
+        assert_eq!(Configuration::default_starting_hand_size(8, Variation::Traditional), 5);
 
         // AllFives variation (same as Traditional)
-        assert_eq!(default_starting_hand_size(2, Variation::AllFives), 7);
-        assert_eq!(default_starting_hand_size(4, Variation::AllFives), 6);
-        assert_eq!(default_starting_hand_size(6, Variation::AllFives), 5);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::AllFives), 7);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::AllFives), 6);
+        assert_eq!(Configuration::default_starting_hand_size(6, Variation::AllFives), 5);
 
         // AllSevens variation (same as Traditional)
-        assert_eq!(default_starting_hand_size(2, Variation::AllSevens), 7);
-        assert_eq!(default_starting_hand_size(4, Variation::AllSevens), 6);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::AllSevens), 7);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::AllSevens), 6);
 
         // FiveUp variation (same as Traditional)
-        assert_eq!(default_starting_hand_size(2, Variation::FiveUp), 7);
-        assert_eq!(default_starting_hand_size(4, Variation::FiveUp), 6);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::FiveUp), 7);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::FiveUp), 6);
 
         // Bergen variation (always 6)
-        assert_eq!(default_starting_hand_size(2, Variation::Bergen), 6);
-        assert_eq!(default_starting_hand_size(4, Variation::Bergen), 6);
-        assert_eq!(default_starting_hand_size(8, Variation::Bergen), 6);
-        assert_eq!(default_starting_hand_size(10, Variation::Bergen), 6);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::Bergen), 6);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::Bergen), 6);
+        assert_eq!(Configuration::default_starting_hand_size(8, Variation::Bergen), 6);
+        assert_eq!(Configuration::default_starting_hand_size(10, Variation::Bergen), 6);
 
         // Blind variation
-        assert_eq!(default_starting_hand_size(2, Variation::Blind), 8);
-        assert_eq!(default_starting_hand_size(3, Variation::Blind), 7);
-        assert_eq!(default_starting_hand_size(4, Variation::Blind), 6);
-        assert_eq!(default_starting_hand_size(5, Variation::Blind), 5);
-        assert_eq!(default_starting_hand_size(8, Variation::Blind), 5);
+        assert_eq!(Configuration::default_starting_hand_size(2, Variation::Blind), 8);
+        assert_eq!(Configuration::default_starting_hand_size(3, Variation::Blind), 7);
+        assert_eq!(Configuration::default_starting_hand_size(4, Variation::Blind), 6);
+        assert_eq!(Configuration::default_starting_hand_size(5, Variation::Blind), 6);
+        assert_eq!(Configuration::default_starting_hand_size(8, Variation::Blind), 6);
     }
     #[test]
     fn test_tuple_ordinal_conversion_comprehensive() {
@@ -658,7 +598,7 @@ mod tests {
         ];
 
         for variation in variations {
-            let hand_size = default_starting_hand_size(2, variation);
+            let hand_size = Configuration::default_starting_hand_size(2, variation);
             assert!(hand_size > 0);
             assert!(hand_size <= 10); // Reasonable upper bound
         }

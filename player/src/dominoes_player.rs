@@ -84,7 +84,7 @@ impl<'a> DominoesPlayer<'a> {
     /// This method recalculates probabilities assuming uniform distribution
     /// of remaining tiles between opponent hand and boneyard
     pub fn update_opponent_probabilities(&mut self, _boneyard_count: usize) {
-        let opponent_hand_size = self.configuration.starting_hand_size; // Assume opponent still has starting hand size
+        let opponent_hand_size = self.configuration.starting_hand_size(); // Assume opponent still has starting hand size
 
         // For tiles still hidden, calculate probability they're in opponent's hand
         // vs. still in the boneyard
@@ -121,7 +121,7 @@ impl<'a> Player for DominoesPlayer<'a> {
 
     fn set_up(&mut self, state: &mut DominoesState) {
         // Draw the starting hand size number of tiles from the boneyard
-        let hand_size = self.configuration.starting_hand_size;
+        let hand_size = self.configuration.starting_hand_size();
         for _ in 0..hand_size {
             if let Some(tile) = state.draw_tile() {
                 self.hand.add_tile(tile);
@@ -225,9 +225,10 @@ mod tests {
         let player = DominoesPlayer::new(1, &configuration);
 
         // Test that DominoesPlayer stores the configuration reference correctly
-        // This verifies our constructor works and configuration is accessible
-        assert_eq!(player.configuration.num_players, configuration.num_players);
-        assert_eq!(player.configuration.variation, configuration.variation);
+        // This verifies our constructor works by checking initialization based on configuration
+        // Verify that hidden tiles are initialized to the full set
+        assert_eq!(player.hidden_tiles().len(), configuration.set_size());
+        assert_eq!(player.hidden_tiles(), configuration.all_tiles());
     }
 
     #[test]

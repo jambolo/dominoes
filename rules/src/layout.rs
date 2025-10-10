@@ -200,7 +200,7 @@ impl Layout {
         Self {
             nodes: Vec::new(),
             open: MultiMap::new(),
-            end_counts: vec![0; configuration.set_id as usize + 1], // +1 because values are 0..set_id inclusive
+            end_counts: vec![0; configuration.set_id() as usize + 1], // +1 because values are 0..set_id inclusive
         }
     }
 

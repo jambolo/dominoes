@@ -74,9 +74,9 @@ impl<'a> DominoesGame<'a> {
     /// ```
     pub fn run(&mut self) {
         println!("Setting up the game...\n");
-        println!("Game Variation: {}", self.configuration.variation.name());
-        println!("Number of Players: {}", self.configuration.num_players);
-        println!("Domino Set: Double-{}", self.configuration.set_id);
+        println!("Game Variation: {}", self.configuration.variation().name());
+        println!("Number of Players: {}", self.configuration.num_players());
+        println!("Domino Set: Double-{}", self.configuration.set_id());
 
         let mut state = DominoesState::new(self.configuration);
 
@@ -87,7 +87,7 @@ impl<'a> DominoesGame<'a> {
 
         // Prevent infinite loop in stub implementation
         let mut turn_count = 0;
-        let max_turns = self.configuration.set_size() * 2 + self.configuration.num_players; // draw+play for each tile plus passing
+        let max_turns = self.configuration.set_size() * 2 + self.configuration.num_players(); // draw+play for each tile plus passing
 
         while !state.game_is_over && turn_count < max_turns {
             let current_player_id = state.whose_turn();
@@ -154,7 +154,7 @@ impl<'a> DominoesGame<'a> {
         self.bob.set_up(state);
 
         // Handle setup variations
-        match self.configuration.variation {
+        match self.configuration.variation() {
             // In traditional dominoes, the player with the highest double starts. If nobody has a double, players must redraw.
             rules::Variation::Traditional => {
                 // Determine starting player based on highest double
@@ -202,7 +202,7 @@ impl<'a> DominoesGame<'a> {
 
     // Marks the game as over according to the variation
     fn game_is_over_by_variation(&self, state: &DominoesState) -> Option<Option<u8>> {
-        match self.configuration.variation {
+        match self.configuration.variation() {
             rules::Variation::Traditional => {
                 // In Traditional variation, game ends when a player empties their hand or both players pass. The winner is
                 // the player with the lowest hand score.
@@ -210,7 +210,7 @@ impl<'a> DominoesGame<'a> {
                     return Some(Some(self.alice.id()));
                 } else if self.bob.hand().is_empty() {
                     return Some(Some(self.bob.id()));
-                } else if state.consecutive_passes as usize >= self.configuration.num_players {
+                } else if state.consecutive_passes as usize >= self.configuration.num_players() {
                     let alice_score = self.alice.hand().score();
                     let bob_score = self.bob.hand().score();
                     return Some(if alice_score < bob_score {
@@ -224,7 +224,7 @@ impl<'a> DominoesGame<'a> {
             }
             _ => {
                 // FIXME: Add real game ending logic based on variation here.
-                if state.consecutive_passes as usize >= self.configuration.num_players {
+                if state.consecutive_passes as usize >= self.configuration.num_players() {
                     return Some(None); // Game ends in a draw
                 }
             }
@@ -235,7 +235,7 @@ impl<'a> DominoesGame<'a> {
 
     // Determines if the turn is over according to the variation
     fn turn_is_over_by_variation(&self, action: &Action) -> bool {
-        match self.configuration.variation {
+        match self.configuration.variation() {
             rules::Variation::Traditional => {
                 if action.tile_drawn.is_none() {
                     return true; // Tile was played or passed, end turn
@@ -296,11 +296,7 @@ mod tests {
     use rules::{Configuration, Variation};
 
     fn create_test_configuration() -> Configuration {
-        Configuration {
-            starting_hand_size: 7,
-            set_id: 6,
-            ..Configuration::default()
-        }
+        Configuration::new(2, Variation::Traditional, 6, 7)
     }
 
     #[test]
@@ -310,12 +306,12 @@ mod tests {
 
         // Verify the game was created successfully
         // Check that the configuration values are properly stored
-        assert_eq!(game.configuration.num_players, config.num_players);
+        assert_eq!(game.configuration.num_players(), config.num_players());
         assert_eq!(
-            game.configuration.starting_hand_size,
-            config.starting_hand_size
+            game.configuration.starting_hand_size(),
+            config.starting_hand_size()
         );
-        assert_eq!(game.configuration.set_id, config.set_id);
+        assert_eq!(game.configuration.set_id(), config.set_id());
     }
 
     #[test]
@@ -324,39 +320,36 @@ mod tests {
         let default_config = Configuration::default();
         let default_game = DominoesGame::new(&default_config);
         assert_eq!(
-            default_game.configuration.num_players,
-            default_config.num_players
+            default_game.configuration.num_players(),
+            default_config.num_players()
         );
         assert_eq!(
-            default_game.configuration.starting_hand_size,
-            default_config.starting_hand_size
+            default_game.configuration.starting_hand_size(),
+            default_config.starting_hand_size()
         );
 
         // Test with traditional variation
         let traditional_config = Configuration::new(2, Variation::Traditional, 7, 6);
         let traditional_game = DominoesGame::new(&traditional_config);
         assert_eq!(
-            traditional_game.configuration.num_players,
-            traditional_config.num_players
+            traditional_game.configuration.num_players(),
+            traditional_config.num_players()
         );
         assert_eq!(
-            traditional_game.configuration.set_id,
-            traditional_config.set_id
+            traditional_game.configuration.set_id(),
+            traditional_config.set_id()
         );
 
         // Test with different hand size
-        let large_hand_config = Configuration {
-            starting_hand_size: 10,
-            ..Configuration::default()
-        };
+        let large_hand_config = Configuration::new(2, Variation::Traditional, 6, 10);
         let large_hand_game = DominoesGame::new(&large_hand_config);
         assert_eq!(
-            large_hand_game.configuration.starting_hand_size,
-            large_hand_config.starting_hand_size
+            large_hand_game.configuration.starting_hand_size(),
+            large_hand_config.starting_hand_size()
         );
         assert_eq!(
-            large_hand_game.configuration.num_players,
-            large_hand_config.num_players
+            large_hand_game.configuration.num_players(),
+            large_hand_config.num_players()
         );
     }
 
@@ -375,12 +368,12 @@ mod tests {
         let minimal_config = Configuration::new(2, Variation::Traditional, 1, 1);
         let game = DominoesGame::new(&minimal_config);
 
-        assert_eq!(game.configuration.num_players, minimal_config.num_players);
+        assert_eq!(game.configuration.num_players(), minimal_config.num_players());
         assert_eq!(
-            game.configuration.starting_hand_size,
-            minimal_config.starting_hand_size
+            game.configuration.starting_hand_size(),
+            minimal_config.starting_hand_size()
         );
-        assert_eq!(game.configuration.set_id, minimal_config.set_id);
+        assert_eq!(game.configuration.set_id(), minimal_config.set_id());
         assert!(game.history.get_actions().is_empty());
     }
 
@@ -390,12 +383,12 @@ mod tests {
         let large_config = Configuration::new(2, Variation::Traditional, 15, 12);
         let game = DominoesGame::new(&large_config);
 
-        assert_eq!(game.configuration.num_players, large_config.num_players);
+        assert_eq!(game.configuration.num_players(), large_config.num_players());
         assert_eq!(
-            game.configuration.starting_hand_size,
-            large_config.starting_hand_size
+            game.configuration.starting_hand_size(),
+            large_config.starting_hand_size()
         );
-        assert_eq!(game.configuration.set_id, large_config.set_id);
+        assert_eq!(game.configuration.set_id(), large_config.set_id());
         assert!(game.history.get_actions().is_empty());
     }
 
@@ -405,12 +398,12 @@ mod tests {
         let game = DominoesGame::new(&config);
 
         // Verify that the game holds a reference to the same configuration
-        assert_eq!(game.configuration.num_players, config.num_players);
+        assert_eq!(game.configuration.num_players(), config.num_players());
         assert_eq!(
-            game.configuration.starting_hand_size,
-            config.starting_hand_size
+            game.configuration.starting_hand_size(),
+            config.starting_hand_size()
         );
-        assert_eq!(game.configuration.set_id, config.set_id);
+        assert_eq!(game.configuration.set_id(), config.set_id());
     }
 
     #[test]
@@ -420,11 +413,11 @@ mod tests {
         let game = DominoesGame::new(&config);
 
         // Game should be valid as long as config is in scope
-        assert_eq!(game.configuration.num_players, 2);
+        assert_eq!(game.configuration.num_players(), 2);
 
         // Create another game with the same config
         let game2 = DominoesGame::new(&config);
-        assert_eq!(game2.configuration.num_players, 2);
+        assert_eq!(game2.configuration.num_players(), 2);
     }
 
     #[test]
@@ -451,8 +444,8 @@ mod tests {
         assert!(game2.history.get_actions().is_empty());
 
         assert_eq!(
-            game1.configuration.num_players,
-            game2.configuration.num_players
+            game1.configuration.num_players(),
+            game2.configuration.num_players()
         );
     }
 
@@ -463,7 +456,7 @@ mod tests {
             let config = Configuration::new(2, variation, 7, 6);
             let game = DominoesGame::new(&config);
 
-            assert_eq!(game.configuration.variation, variation);
+            assert_eq!(game.configuration.variation(), variation);
             assert!(game.history.get_actions().is_empty());
         }
     }
