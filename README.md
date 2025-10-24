@@ -2,6 +2,32 @@
 
 Play Dominoes against the computer.
 
+## Implementation
+
+### Rollout Heuristics
+
+| Rank                                                      | Heuristic                                                                                                                                                                                    |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Tile Tracking & End-Frequency Awareness                | The single strongest predictor of expert or AI strength. Knowing which numbers are “live” or “dead” underpins nearly every other decision. Without this, all other heuristics are guesswork. |
+| 2. Mobility / End-Control (Maintain Initiative)           | Having the ability to play to multiple ends is the key to avoiding forced passes. Agents maximizing “valid move count” consistently outperform others.                                       |
+| 3. Minimize Pip Count (Safe Reduction)                    | Especially decisive in draw/block variants — losing by pip total is common. Optimal players shed large tiles unless it harms control.                                                        |
+| 4. Opponent End Restriction (Forcing Passes)              | Steering the board toward numbers the opponent lacks yields direct tempo control and block wins. Second only to tile tracking in late-game value.                                            |
+| 5. Balanced End Composition (Avoid Single End Dependence) | Reduces chance of total block; a major mid-game stability factor.                                                                                                                            |
+| 6. Early High-Tile Play (When Safe)                       | A consistent gain in expected pip differential; reduces high-pip traps.                                                                                                                      |
+| 7. Endgame Lookahead / Minimax Pip Outcome                | Crucial in final 4–6 tiles; top bots explicitly simulate this.                                                                                                                               |
+| 8. Double-Tile Timing (Hold Common, Shed Rare)            | Expert hallmark. Doubles control tempo, but dead doubles sink win rate if held too long.                                                                                                     |
+| 9. Board Closure & Block Construction                     | Knowing when to close an end versus expand one improves control in low-mobility phases.                                                                                                      |
+| 10. Forcing Single-End Scenarios (When Ahead)             | Converts initiative into deterministic wins. Risky if misapplied.                                                                                                                            |
+| 11. Tempo Sacrifice for Strategic Control                 | Used by advanced players to manipulate future ends. Requires foresight.                                                                                                                      |
+| 12. Probe Plays for Information                           | Marginally improves inference; valuable in hidden-hand variants.                                                                                                                             |
+| 13. Countdown Simulation (Explicit Small-Tree Search)     | When near the end, limited lookahead produces measurable gains but is computationally heavy.                                                                                                 |
+| 14. Create Forks (Branch Opportunities)                   | Helpful early, but loses value if opponent tracks tiles well.                                                                                                                                |
+| 15. Pip Sum Steering (High vs Low Ends)                   | Secondary pip optimization; relevant in scoring variants more than in block.                                                                                                                 |
+| 16. Ambiguity Maintenance                                 | Bluffing and concealment have small effect under perfect tracking.                                                                                                                           |
+| 17. Early Game Diversity (End Variety Maximization)       | Useful but dominated by mobility and pip minimization metrics.                                                                                                                               |
+| 18. Fork Avoidance When Losing Control                    | Important only when under pressure; otherwise redundant with mobility control.                                                                                                               |
+| 19. Tempo Switching via Doubles                           | A stylish but minor tactic unless the board is symmetric.                                                                                                                                    |
+
 ## Utilities
 
 Executables that demonstrate concepts and features.

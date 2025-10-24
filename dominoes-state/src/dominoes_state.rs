@@ -85,6 +85,13 @@ impl DominoesState {
         }
     }
 
+    /// Returns a view of the state for a specific player
+    ///
+    /// Returns a view of the state for a specific player
+    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { self, player_id } }
+
+    fn public(&self) -> PublicView<'_> { PublicView { self } }
+
     /// Checks if a tile can be played on the current layout
     ///
     /// Validates whether the specified tile can be legally placed on the layout. For empty layouts, only doubles can be played.
@@ -309,6 +316,46 @@ impl DominoesState {
         } else {
             0
         };
+    }
+}
+
+
+/// A view of the state for a specific player
+struct PlayerView<'a> {
+    state: &'a mut DominoesState,
+    player_id: u8,
+}
+
+impl<'a> PlayerView<'a> {
+    /// Returns a reference to the layout of the game
+    pub fn layout(&self) -> &Layout { &self.state.layout }
+    /// Returns the number of tiles remaining in the boneyard
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    /// Returns a reference to the player's own hand
+    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize] }
+    /// Returns a mutable reference to the player's own hand
+    pub fn hand_mut(&mut self) -> &mut Vec<Tile> { &mut self.state.hands[self.player_id as usize] }
+    /// Returns an iterator over the sizes of each player's hand
+    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
+        self.state.hands.iter().map(Vec::len)
+    }
+}
+
+/// A public view of the state
+///
+/// This view exposes only information that is public to all players, hiding private information such as other players' hands.
+struct PublicView<'a> {
+    state: &'a DominoesState,
+}
+
+impl<'a> PublicView<'a> {
+    /// Returns a reference to the layout of the game
+    pub fn layout(&self) -> &Layout { &self.state.layout }
+    /// Returns the number of tiles remaining in the boneyard
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    /// Returns an iterator over the sizes of each player's hand
+    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
+        self.state.hands.iter().map(Vec::len)
     }
 }
 
