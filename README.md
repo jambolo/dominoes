@@ -2,6 +2,8 @@
 
 Play Dominoes against the computer.
 
+[![Rust Build](https://github.com/jambolo/dominoes/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/jambolo/dominoes/actions/workflows/rust.yml)
+
 ## Implementation
 
 ### Rollout Heuristics
