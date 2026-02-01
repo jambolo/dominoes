@@ -3,7 +3,7 @@
 //! This module defines the response generator for the Dominoes game, which is responsible for generating all possible
 //! actions from a given game state.
 
-use hidden_game_player::mcts::ResponseGenerator;
+use game_player::mcts::ResponseGenerator;
 use dominoes_state::{DominoesState, Action};
 
 /// A response generator for the Dominoes game that implements the `ResponseGenerator` trait.

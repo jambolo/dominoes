@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use dominoes_state::{Action, DominoesState};
 use crate::{Hand, Player, DominoesResponseGenerator, DominoesRollout};
 use rules::{Configuration, Tile};
-use hidden_game_player::{mcts, State};
+use game_player::{mcts, State};
 
 /// An AI implementation of Player for dominoes games
 #[derive(Debug, Clone)]

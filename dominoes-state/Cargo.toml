@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 ego-tree = "0.10"
-hidden-game-player = { path = "../hidden-game-player" }
+game-player = { path = "../game-player" }
 multimap = "0.10"
 rand = "0.9"
 rand_chacha = "0.9"

@@ -5,7 +5,7 @@
 
 use rand::Rng;
 
-use hidden_game_player::{mcts::Rollout, State};
+use game_player::{mcts::Rollout, State};
 use dominoes_state::{Action, DominoesState};
 use rules::Boneyard;
 use crate::DominoesResponseGenerator;
@@ -23,7 +23,7 @@ use crate::DominoesResponseGenerator;
 /// use player::DominoesRollout;
 /// use dominoes_state::DominoesState;
 /// use rules::Configuration;
-/// use hidden_game_player::mcts::Rollout;
+/// use game_player::mcts::Rollout;
 ///
 /// let rollout = DominoesRollout::new();
 /// let config = Configuration::default();

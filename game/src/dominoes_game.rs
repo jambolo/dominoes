@@ -1,7 +1,7 @@
 //! Manages the entire dominoes game, including player setup, turn management, and game state transitions.
 
 use dominoes_state::{Action, DominoesState, History};
-use hidden_game_player::{PlayerId, State};
+use game_player::{PlayerId, State};
 use player::{HumanPlayer, Player};
 use rules::Configuration;
 

@@ -6,7 +6,7 @@
 
 use static_assertions::const_assert;
 
-use hidden_game_player::StaticEvaluator;
+use game_player::StaticEvaluator;
 use dominoes_state::DominoesState;
 
 const WEIGHT_MOBILITY: f32 = 0.4;
@@ -32,7 +32,7 @@ const_assert!((_TOTAL_WEIGHT - 1.0).abs() < 5.0 * f32::EPSILON);
 /// use player::DominoesEvaluator;
 /// use dominoes_state::DominoesState;
 /// use rules::Configuration;
-/// use hidden_game_player::StaticEvaluator;
+/// use game_player::StaticEvaluator;
 ///
 /// let evaluator = DominoesEvaluator::new();
 /// let config = Configuration::default();

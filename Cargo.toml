@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "dominoes-state",
     "game",
-    "hidden-game-player",
+    "game-player",
     "player",
     "rules"
 ]
