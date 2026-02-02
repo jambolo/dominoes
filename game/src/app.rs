@@ -2,14 +2,14 @@
 
 use crate::game_history::GameHistory;
 use crate::io::{self, IoError};
-use crate::scene_graph::{RenderListNode, SceneGraph};
+use crate::scene_graph::{EndMarker, RenderListNode, SceneGraph};
 use dominoes_state::{Action, DominoesState};
 use iced::widget::canvas::{self, Canvas, Geometry};
-use iced::widget::{button, column, container, row, text, Row};
-use iced::{Element, Length, Point, Rectangle, Task, Vector};
+use iced::widget::{button, column, container, row, stack, text, Row};
+use iced::{Color, Element, Length, Point, Rectangle, Task, Vector};
 use player::{HumanPlayer, Player};
 use rules::{Configuration, Tile, Variation};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 /// Turn phase state machine
@@ -584,15 +584,23 @@ impl DominoesApp {
         // Create scene graph from layout
         if let Some(tree) = self.state.layout.to_tree() {
             let scene_graph = SceneGraph::new(&tree);
-            let canvas_state = LayoutCanvas {
-                scene_graph,
-                tile_images: &self.tile_images,
-            };
+            let highlight_ends = self.highlight_ends();
 
-            Canvas::new(canvas_state)
-                .width(Length::Fill)
-                .height(Length::FillPortion(2))
-                .into()
+            let tile_canvas = Canvas::new(LayoutCanvas {
+                scene_graph: scene_graph.clone(),
+                tile_images: &self.tile_images,
+            })
+            .width(Length::Fill)
+            .height(Length::FillPortion(2));
+
+            let highlight_canvas = Canvas::new(HighlightCanvas {
+                scene_graph,
+                highlight_ends,
+            })
+            .width(Length::Fill)
+            .height(Length::FillPortion(2));
+
+            stack![tile_canvas, highlight_canvas].into()
         } else {
             container(text("Layout error"))
                 .width(Length::Fill)
@@ -665,6 +673,20 @@ impl DominoesApp {
                 })
             })
             .collect()
+    }
+
+    fn highlight_ends(&self) -> Vec<u8> {
+        match self.turn_phase {
+            TurnPhase::SelectEnd { tile_index, .. } => {
+                let current_player = self.state.whose_turn as usize;
+                let hand = &self.state.hands[current_player];
+                let tile = hand.tiles().get(tile_index).copied();
+                tile.map(|tile| self.state.highlightable_ends(Some(&tile)))
+                    .unwrap_or_default()
+            }
+            TurnPhase::SelectTile { .. } => self.state.highlightable_ends(None),
+            _ => Vec::new(),
+        }
     }
 }
 
@@ -755,5 +777,100 @@ impl<'a> LayoutCanvas<'a> {
                 frame.draw_image(Rectangle::new(Point::ORIGIN, node.size), handle);
             });
         }
+    }
+}
+
+/// Canvas state for rendering end highlights
+struct HighlightCanvas {
+    scene_graph: SceneGraph,
+    highlight_ends: Vec<u8>,
+}
+
+impl canvas::Program<Message> for HighlightCanvas {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &iced::Renderer,
+        _theme: &iced::Theme,
+        bounds: Rectangle,
+        _cursor: iced::mouse::Cursor,
+    ) -> Vec<Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+
+        let scale = self.calculate_scale(bounds);
+        let offset = self.calculate_offset(bounds, scale);
+
+        let highlight_set: HashSet<u8> = self.highlight_ends.iter().copied().collect();
+
+        frame.with_save(|frame| {
+            frame.translate(offset);
+            frame.scale(scale);
+
+            for marker in self.scene_graph.end_markers() {
+                if highlight_set.contains(&marker.value) {
+                    self.render_highlight(frame, marker);
+                }
+            }
+        });
+
+        vec![frame.into_geometry()]
+    }
+}
+
+impl HighlightCanvas {
+    const MARGIN: f32 = 0.1;
+    const MAX_TILE_SIZE: f32 = 0.125;
+    const HIGHLIGHT_RADIUS: f32 = 140.0;
+    const HIGHLIGHT_STROKE: f32 = 40.0;
+
+    fn calculate_scale(&self, bounds: Rectangle) -> f32 {
+        let scene_bounds = self.scene_graph.bounds();
+
+        let content_scale = {
+            let scale_x = (bounds.width * (1.0 - Self::MARGIN)) / scene_bounds.width;
+            let scale_y = (bounds.height * (1.0 - Self::MARGIN)) / scene_bounds.height;
+            scale_x.min(scale_y)
+        };
+
+        self.scene_graph
+            .render_list()
+            .first()
+            .map(|node| {
+                let max_scale_x = bounds.width * Self::MAX_TILE_SIZE / node.size.width;
+                let max_scale_y = bounds.height * Self::MAX_TILE_SIZE / node.size.height;
+                content_scale.min(max_scale_x.min(max_scale_y))
+            })
+            .unwrap_or(content_scale)
+    }
+
+    fn calculate_offset(&self, bounds: Rectangle, scale: f32) -> Vector {
+        let scene_bounds = self.scene_graph.bounds();
+        let window_center = Vector::new(bounds.width / 2.0, bounds.height / 2.0);
+        let content_center = Vector::new(
+            (scene_bounds.x + scene_bounds.width / 2.0) * scale,
+            (scene_bounds.y + scene_bounds.height / 2.0) * scale,
+        );
+        window_center - content_center
+    }
+
+    fn render_highlight(&self, frame: &mut canvas::Frame, marker: &EndMarker) {
+        let center = Point::new(marker.position.x, marker.position.y);
+        let outer_radius = Self::HIGHLIGHT_RADIUS;
+        let inner_radius = (Self::HIGHLIGHT_RADIUS - Self::HIGHLIGHT_STROKE).max(1.0);
+
+        let path = canvas::Path::new(|builder| {
+            builder.circle(center, outer_radius);
+            builder.circle(center, inner_radius);
+        });
+
+        frame.fill(
+            &path,
+            canvas::Fill {
+                style: canvas::Style::Solid(Color::from_rgb(0.2, 0.9, 0.2)),
+                rule: canvas::fill::Rule::EvenOdd,
+            },
+        );
     }
 }

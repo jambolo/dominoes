@@ -392,6 +392,37 @@ impl<'a> PublicView<'a> {
     }
 }
 
+impl DominoesState {
+    /// Returns true if an open end should be highlighted.
+    ///
+    /// If `selected` is None, highlights when any tile in hand can be played on `end`.
+    /// If `selected` is Some(tile), highlights when that tile can be played on `end`.
+    pub fn should_highlight_end(&self, end: u8, selected: Option<&Tile>) -> bool {
+        if self.layout.is_empty() {
+            return false;
+        }
+        if self.layout.end_counts[end as usize] == 0 {
+            return false;
+        }
+
+        match selected {
+            Some(tile) => self.can_play_tile(tile, Some(end)),
+            None => self.hands
+                .get(self.whose_turn as usize)
+                .map(|hand| hand.iter().any(|tile| self.can_play_tile(tile, Some(end))))
+                .unwrap_or(false),
+        }
+    }
+
+    /// Returns all end values that should be highlighted.
+    pub fn highlightable_ends(&self, selected: Option<&Tile>) -> Vec<u8> {
+        let max_end = self.layout.end_counts.len().saturating_sub(1) as u8;
+        (0u8..=max_end)
+            .filter(|&end| self.should_highlight_end(end, selected))
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -996,5 +1027,54 @@ mod tests {
         state2.mark_game_over(None); // Draw
         assert_eq!(state2.is_terminal(), state2.game_is_over);
         assert!(state2.is_terminal());
+    }
+
+    #[test]
+    fn test_play_tile_with_end() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+
+        // Start layout with a double
+        state.play_tile(Tile::from((3, 3)), None);
+
+        let tile = Tile::from((3, 5));
+        let end = 3;
+
+        assert!(state.can_play_tile(&tile, Some(end)));
+        state.play_tile(tile, Some(end));
+
+        assert!(state.layout.end_counts[end as usize] > 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot be played on the layout")]
+    fn test_play_tile_with_end_not_in_hand() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+
+        // Start layout with a double
+        state.play_tile(Tile::from((3, 3)), None);
+
+        let tile = Tile::from((4, 4));
+        let end = 3;
+
+        assert!(!state.can_play_tile(&tile, Some(end)));
+        state.play_tile(tile, Some(end));
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot be played on the layout")]
+    fn test_play_tile_with_end_not_in_hand_and_no_hand() {
+        let configuration = Configuration::default();
+        let mut state = DominoesState::new(&configuration);
+
+        // Start layout with a double
+        state.play_tile(Tile::from((3, 3)), None);
+
+        let tile = Tile::from((4, 4));
+        let end = 3;
+
+        assert!(!state.can_play_tile(&tile, Some(end)));
+        state.play_tile(tile, Some(end));
     }
 }

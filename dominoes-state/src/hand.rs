@@ -78,6 +78,16 @@ impl Hand {
         &self.tiles
     }
 
+    /// Returns an iterator over the tiles in the hand
+    ///
+    /// Provides convenient iteration without exposing the underlying vector.
+    ///
+    /// # Returns
+    /// An iterator over references to tiles in the hand
+    pub fn iter(&self) -> std::slice::Iter<'_, Tile> {
+        self.tiles.iter()
+    }
+
     /// Returns a reference to a tile in the hand at the given index
     ///
     /// Provides safe indexed access to tiles in the hand. Returns None if the index is out of bounds.

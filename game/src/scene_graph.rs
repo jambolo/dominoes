@@ -147,11 +147,21 @@ pub struct RenderListNode {
 /// A list of tiles with their rendering information
 pub type RenderList = Vec<RenderListNode>;
 
+/// Information about an open end marker used for highlighting
+#[derive(Debug, Clone)]
+pub struct EndMarker {
+    /// End value (pip count) for this open end
+    pub value: u8,
+    /// Position of the end in world coordinates
+    pub position: Vector,
+}
+
 /// A scene graph that manages the layout and rendering information for domino tiles
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SceneGraph {
     bounds: Rectangle,
     render_list: RenderList,
+    end_markers: Vec<EndMarker>,
 }
 
 impl SceneGraph {
@@ -166,8 +176,13 @@ impl SceneGraph {
         let placements = Self::compute_placements(tree);
         let bounds = Self::compute_bounds(&placements);
         let render_list = Self::build_render_list(tree, &placements);
+        let end_markers = Self::build_end_markers(tree, &placements);
 
-        Self { bounds, render_list }
+        Self {
+            bounds,
+            render_list,
+            end_markers,
+        }
     }
 
     /// Returns the bounding rectangle that contains all tiles.
@@ -184,6 +199,11 @@ impl SceneGraph {
     /// A slice of RenderListNode containing rendering information for each tile
     pub fn render_list(&self) -> &[RenderListNode] {
         &self.render_list
+    }
+
+    /// Returns a list of open end markers with their positions and values.
+    pub fn end_markers(&self) -> &[EndMarker] {
+        &self.end_markers
     }
 
     // Computes the placement information for all tiles in the tree.
@@ -216,6 +236,26 @@ impl SceneGraph {
                     rotation: std::f32::consts::FRAC_PI_2 * i8::from(placement.rotation) as f32,
                     size: TILE_SIZE,
                 })
+            })
+            .collect()
+    }
+
+    // Builds the list of open end markers from the tree and placements.
+    fn build_end_markers(tree: &Tree<Tile>, placements: &PlacementMap) -> Vec<EndMarker> {
+        tree.root()
+            .descendants()
+            .flat_map(|node| {
+                placements
+                    .get(&node.id())
+                    .into_iter()
+                    .flat_map(move |placement| {
+                        placement.attachments.iter().map(move |side| {
+                            let value = end_value_for_side(node.value(), *side);
+                            let position = placement.position
+                                + rotated_vector(&attachment_offset(*side), placement.rotation);
+                            EndMarker { value, position }
+                        })
+                    })
             })
             .collect()
     }
@@ -312,6 +352,19 @@ fn rotated_vector(vector: &Vector, side: TileSide) -> Vector {
         TileSide::Bottom => Vector::new(-vector.y, vector.x),
         TileSide::Left => Vector::new(-vector.x, -vector.y),
         TileSide::Top => Vector::new(vector.y, -vector.x),
+    }
+}
+
+// Returns the end value on a given local side of a tile.
+fn end_value_for_side(tile: &Tile, side: TileSide) -> u8 {
+    let (a, b) = tile.as_tuple();
+    if a == b {
+        return a;
+    }
+
+    match side {
+        TileSide::Top | TileSide::Left => a,
+        TileSide::Bottom | TileSide::Right => b,
     }
 }
 
