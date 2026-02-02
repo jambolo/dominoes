@@ -1,21 +1,13 @@
 //! Dominoes Game Application
 
-mod dominoes_game;
+use game::app::DominoesApp;
+use iced::Task;
+use rules::{Configuration, Variation};
 
-use crate::dominoes_game::DominoesGame;
-use rules::Configuration;
-
-fn main() {
-    println!("Welcome to the Dominoes Game!");
-
-    // Create default configuration
-    let configuration = Configuration::default();
-
-    // Initialize the game with the configuration
-    let mut game = DominoesGame::new(&configuration);
-
-    // Run the game loop
-    game.run();
-
-    println!("Thanks for playing!");
+fn main() -> iced::Result {
+    iced::application("Dominoes", DominoesApp::update, DominoesApp::view)
+        .run_with(|| {
+            let config = Configuration::new(2, Variation::Traditional, 6, 7);
+            (DominoesApp::new(config), Task::none())
+        })
 }

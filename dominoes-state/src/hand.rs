@@ -4,6 +4,7 @@
 //! methods for managing the hand, such as adding and removing tiles, checking for specific tiles, and calculating the hand's score.
 
 use rules::Tile;
+use serde::{Deserialize, Serialize};
 
 /// A player's hand
 ///
@@ -12,7 +13,7 @@ use rules::Tile;
 ///
 /// # Examples
 /// ```rust
-/// # use player::Hand;
+/// # use dominoes_state::Hand;
 /// # use rules::Tile;
 ///
 /// let mut hand = Hand::new();
@@ -30,7 +31,7 @@ use rules::Tile;
 /// hand.remove_tile(&Tile::from((1, 2)));
 /// assert_eq!(hand.len(), 2);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Hand {
     /// Vector storing all tiles currently in the hand
     tiles: Vec<Tile>,
@@ -45,7 +46,7 @@ impl Hand {
     /// # Examples
     ///
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     ///
     /// let hand = Hand::new();
     /// assert_eq!(hand.len(), 0);
@@ -63,7 +64,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -89,7 +90,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -114,7 +115,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -140,7 +141,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -165,7 +166,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -198,7 +199,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();

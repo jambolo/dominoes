@@ -23,6 +23,7 @@
 
 use crate::{Configuration, Tile};
 use rand::{seq::SliceRandom, rng};
+use serde::{Deserialize, Serialize};
 
 /// A boneyard implementation.
 ///
@@ -48,7 +49,7 @@ use rand::{seq::SliceRandom, rng};
 ///     println!("Next tile would be: {:?}", next);
 /// }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Boneyard {
     /// All the tiles in the boneyard
     tiles: Vec<Tile>,

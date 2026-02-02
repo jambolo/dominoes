@@ -50,7 +50,7 @@ pub type Z = u64;
 ///
 /// # Thread Safety
 /// `ZHash` implements `Copy` and contains no mutable state, making it thread-safe.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct ZHash {
     /// The current Zobrist hash value
     value: Z,

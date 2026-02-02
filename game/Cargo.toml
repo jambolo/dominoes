@@ -7,10 +7,10 @@ edition = "2024"
 clap = "4.5"
 dominoes-state = { path = "../dominoes-state" }
 ego-tree = { version = "0.10", features=["serde"] }
-game-player = { path = "../game-player" }
 iced = { version = "0.13", features = ["canvas", "image"] }
 player = { path = "../player" }
 regex = "1.11"
+rfd = "0.15"
 rules = { path = "../rules" }
 serde = "1.0"
 serde_json = "1.0"

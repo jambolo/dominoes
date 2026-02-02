@@ -26,9 +26,9 @@ cargo run --bin generate       # Run generate utility
 Rust workspace with 5 crates:
 
 ```
-game (main app)
-├── player (AI implementation)
-│   └── game-player (generic game ai framework, submodule)
+game (main app - Iced GUI)
+├── player (player trait and HumanPlayer)
+│   └── game-player (generic game AI framework, submodule - not currently used)
 ├── dominoes-state (game state, actions, hands)
 └── rules (tiles, layout, boneyard, configuration, variations)
 ```
@@ -39,33 +39,36 @@ Core types: `Tile` (ordinal-based u8), `Layout` (tree via ego_tree), `Boneyard`,
 
 ### dominoes-state
 
-`DominoesState` implements `game_player::State` trait. Tracks layout, boneyard, turn, fingerprint, passes, game status. Uses Zobrist hashing.
-
-### game-player (submodule)
-
-Generic AI framework with MCTS (Monte Carlo Tree Search).
-
-**Core Traits:**
-
-- `State` (`state.rs`): Game state with fingerprinting, turn tracking, action application. Has associated `Action` type.
-- `ResponseGenerator` (`mcts.rs`): Generates legal moves. Returns empty vec when none available.
-- `Rollout` (`mcts.rs`): Simulates game to terminal state, returns score in `[-1.0, 1.0]`.
-
-**Search:**
-
-- `mcts::search()`: Entry point. Takes state, response generator, rollout, exploration constant (default `√2`), max iterations.
-- Returns `Option<Action>` - the action with most visits.
-- `InformationSetMCTS` (`information_set_mcts.rs`): For hidden information games.
-
-**Integration:** Implement `State`, `ResponseGenerator`, `Rollout` traits, call `mcts::search()`.
+`DominoesState` implements `game_player::State` trait. Tracks layout, boneyard, turn, fingerprint, passes, game status, and player hands. Uses Zobrist hashing.
 
 ### player
 
-Dominoes-specific `DominoesPlayer`, `ResponseGenerator`, `Rollout`, `StaticEvaluator` implementations.
+Simple `Player` trait with `id()` and `name()` methods. `HumanPlayer` implementation for human players. AI implementation is planned for the future.
 
 ### game
 
-Main app using Iced GUI. Contains `dominoes_game.rs` (game loop), `layout_parser.rs`, `scene_graph.rs`.
+Main Iced GUI application with PvP gameplay:
+
+- `app.rs`: Main application struct `DominoesApp`, turn phase state machine, message handling
+- `game_history.rs`: Undo/redo via state snapshots
+- `io.rs`: Import/export game history and state as JSON
+- `layout_parser.rs`: Parse text-based layout format
+- `scene_graph.rs`: Tile placement calculations for rendering
+
+### game-player (submodule) - Future AI Support
+
+Generic AI framework with MCTS (Monte Carlo Tree Search). Not currently integrated.
+
+**Core Traits:**
+
+- `State` (`state.rs`): Game state with fingerprinting, turn tracking, action application.
+- `ResponseGenerator` (`mcts.rs`): Generates legal moves.
+- `Rollout` (`mcts.rs`): Simulates game to terminal state.
+
+**Search:**
+
+- `mcts::search()`: Entry point for MCTS search.
+- `InformationSetMCTS`: For hidden information games.
 
 ## Branch Strategy
 

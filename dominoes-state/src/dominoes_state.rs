@@ -3,12 +3,13 @@
 //! This module defines the `DominoesState` struct which implements the `State` trait from the `game_player` crate.
 //! It encapsulates the current state of a dominoes game, including the layout, boneyard, player turns, and game status.
 
-use crate::{Action, ZHash};
+use crate::{Action, Hand, ZHash};
 use game_player::{PlayerId, State};
 use rules::{Boneyard, Configuration, Layout, Tile};
+use serde::{Deserialize, Serialize};
 
 /// A concrete implementation of game_player::State for dominoes games
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DominoesState {
     /// The layout
     pub layout: Layout,
@@ -24,6 +25,8 @@ pub struct DominoesState {
     pub game_is_over: bool,
     /// Player ID of the winner, or None if the game is still ongoing
     pub winner: Option<u8>,
+    /// Player hands (index = player_id)
+    pub hands: Vec<Hand>,
 }
 
 impl State for DominoesState {
@@ -74,6 +77,8 @@ impl DominoesState {
     /// assert!(!state.game_is_over);
     /// ```
     pub fn new(configuration: &Configuration) -> Self {
+        let num_players = configuration.num_players();
+        let hands = (0..num_players).map(|_| Hand::new()).collect();
         Self {
             layout: Layout::new(configuration),
             boneyard: Boneyard::new(configuration),
@@ -82,15 +87,28 @@ impl DominoesState {
             consecutive_passes: 0,
             game_is_over: false,
             winner: None,
+            hands,
         }
     }
 
     /// Returns a view of the state for a specific player
-    ///
-    /// Returns a view of the state for a specific player
-    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { self, player_id } }
+    fn _player(&mut self, player_id: u8) -> PlayerView<'_> {
+        let boneyard_size = self.boneyard.count();
+        let hand_sizes = self.hands.iter().map(|h| h.len()).collect::<Vec<_>>();
+        let hand = &mut self.hands[player_id as usize];
+        PlayerView {
+            layout: &self.layout,
+            boneyard_size,
+            hand,
+            hand_sizes,
+            player_index: player_id as usize,
+        }
+    }
 
-    fn public(&self) -> PublicView<'_> { PublicView { self } }
+    /// Returns a public view of the state
+    fn _public(&self) -> PublicView<'_> {
+        PublicView { state: self }
+    }
 
     /// Checks if a tile can be played on the current layout
     ///
@@ -321,41 +339,56 @@ impl DominoesState {
 
 
 /// A view of the state for a specific player
+///
+/// This view exposes only information available to the player: the public layout,
+/// the boneyard count, the player's own hand, and all hand sizes.
+#[allow(dead_code)]
 struct PlayerView<'a> {
-    state: &'a mut DominoesState,
-    player_id: u8,
+    layout: &'a Layout,
+    boneyard_size: usize,
+    hand: &'a mut Hand,
+    hand_sizes: Vec<usize>,
+    player_index: usize,
 }
 
+#[allow(dead_code)]
 impl<'a> PlayerView<'a> {
     /// Returns a reference to the layout of the game
-    pub fn layout(&self) -> &Layout { &self.state.layout }
+    pub fn layout(&self) -> &Layout { self.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    pub fn boneyard_size(&self) -> usize { self.boneyard_size }
     /// Returns a reference to the player's own hand
-    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize] }
+    pub fn hand(&self) -> &Hand { self.hand }
     /// Returns a mutable reference to the player's own hand
-    pub fn hand_mut(&mut self) -> &mut Vec<Tile> { &mut self.state.hands[self.player_id as usize] }
+    pub fn hand_mut(&mut self) -> &mut Hand { self.hand }
     /// Returns an iterator over the sizes of each player's hand
     pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+        let current_hand_len = self.hand.len();
+        let player_index = self.player_index;
+        self.hand_sizes
+            .iter()
+            .enumerate()
+            .map(move |(idx, size)| if idx == player_index { current_hand_len } else { *size })
     }
 }
 
 /// A public view of the state
 ///
 /// This view exposes only information that is public to all players, hiding private information such as other players' hands.
+#[allow(dead_code)]
 struct PublicView<'a> {
     state: &'a DominoesState,
 }
 
+#[allow(dead_code)]
 impl<'a> PublicView<'a> {
     /// Returns a reference to the layout of the game
     pub fn layout(&self) -> &Layout { &self.state.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.count() }
     /// Returns an iterator over the sizes of each player's hand
     pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+        self.state.hands.iter().map(|h| h.len())
     }
 }
 

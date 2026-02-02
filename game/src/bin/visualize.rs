@@ -110,7 +110,7 @@ impl VisualizerApp {
     }
 
     /// Creates the view element for the visualizer.
-    fn view(&self) -> Element<()> {
+    fn view(&self) -> Element<'_, ()> {
         Canvas::new(self)
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)

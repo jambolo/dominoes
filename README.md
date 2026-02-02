@@ -1,10 +1,32 @@
 # dominoes
 
-Play Dominoes against the computer.
+A dominoes game with an Iced-based GUI supporting Player vs Player gameplay.
 
-[![Rust Build](https://github.com/jambolo/dominoes/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/jambolo/dominoes/actions/workflows/rust.yml) [![codecov](https://codecov.io/gh/jambolo/dominoes/branch/master/graph/badge.svg)](https://codecov.io/gh/jambolo/dominoes)
+**master:** [![Build](https://github.com/jambolo/dominoes/actions/workflows/validation-rust.yml/badge.svg?branch=master)](https://github.com/jambolo/dominoes/actions/workflows/validation-rust.yml)
 
-## Implementation
+**develop:** [![Build](https://github.com/jambolo/dominoes/actions/workflows/validation-rust.yml/badge.svg?branch=develop)](https://github.com/jambolo/dominoes/actions/workflows/validation-rust.yml)
+
+## Features
+
+- **Player vs Player**: Two human players can play dominoes on the same computer
+- **Undo/Redo**: Full game history with undo/redo support
+- **Import/Export**: Save and load games as JSON files
+- **Multiple Variations**: Traditional, All Fives, All Sevens, Bergen, Blind, and Five Up
+
+## Controls
+
+- Click a tile in your hand to select it
+- Click an open end on the layout to play the tile
+- Use the Draw button when you have no playable tiles
+- Use the Pass button when no moves are available and the boneyard is empty
+- Use Undo/Redo buttons to navigate game history
+- Use Export/Import buttons to save/load games
+
+## Future Plans
+
+### AI Opponent
+
+The game-player submodule provides a generic AI framework with MCTS (Monte Carlo Tree Search) that could be used for AI opponents.
 
 ### Rollout Heuristics
 

@@ -25,7 +25,7 @@ use rules::{self, Tile};
 /// // Player passes their turn
 /// let pass_action = Action::pass(0);
 /// ```
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Action {
     /// The ID of the player who took this action
     pub player_id: u8,
