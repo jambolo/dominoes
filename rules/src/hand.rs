@@ -3,7 +3,7 @@
 //! This module provides the Hand struct, which represents a player's collection of domino tiles during a game. It includes
 //! methods for managing the hand, such as adding and removing tiles, checking for specific tiles, and calculating the hand's score.
 
-use rules::Tile;
+use crate::Tile;
 
 /// A player's hand
 ///
@@ -13,7 +13,7 @@ use rules::Tile;
 /// # Examples
 /// ```rust
 /// # use player::Hand;
-/// # use rules::Tile;
+/// # use crate::Tile;
 ///
 /// let mut hand = Hand::new();
 /// hand.add_tile(Tile::from((1, 2)));
@@ -75,6 +75,17 @@ impl Hand {
     /// ```
     pub fn tiles(&self) -> &[Tile] {
         &self.tiles
+    }
+
+    /// Returns a mutable slice of all tiles in the hand
+    ///
+    /// Provides mutable access to all tiles currently held by the player. The tiles are not sorted.
+    ///
+    /// # Returns
+    /// A mutable slice containing references to all tiles in the hand
+    ///
+    pub fn tiles_mut(&mut self) -> &mut [Tile] {
+        &mut self.tiles
     }
 
     /// Returns a reference to a tile in the hand at the given index

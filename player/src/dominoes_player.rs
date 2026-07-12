@@ -6,9 +6,9 @@
 
 use std::collections::HashMap;
 
-use dominoes_state::{Action, DominoesState};
-use crate::{Hand, Player, DominoesResponseGenerator, DominoesRollout};
-use rules::{Configuration, Tile};
+use dominoes_state::{Action, DominoesState, PlayerView};
+use crate::{Player, DominoesResponseGenerator, DominoesRollout};
+use rules::{Configuration, Hand, Tile};
 use hidden_game_player::{mcts, State};
 
 /// An AI implementation of Player for dominoes games
@@ -21,8 +21,6 @@ pub struct DominoesPlayer<'a> {
     /// List of tiles that are still hidden/unknown to this player
     /// Initially contains all tiles, but tiles are removed as they are played or drawn by this player
     hidden: Vec<Tile>,
-    /// List of tiles that the player currently holds in their hand
-    hand: Hand,
     /// Probability of the other player having each possible tile
     /// Maps tile -> probability (0.0 to 1.0)
     opponent_tile_probabilities: HashMap<Tile, f64>,
@@ -41,7 +39,6 @@ impl<'a> DominoesPlayer<'a> {
             player_id,
             configuration,
             hidden: configuration.all_tiles().to_vec().clone(),
-            hand: Hand::new(),
             opponent_tile_probabilities,
         }
     }
@@ -111,7 +108,6 @@ impl<'a> DominoesPlayer<'a> {
 
 impl<'a> Player for DominoesPlayer<'a> {
     fn reset(&mut self) {
-        self.hand = Hand::new();
         self.hidden = self.configuration.all_tiles().to_vec().clone();
         // Reset opponent probabilities
         for tile in self.configuration.all_tiles() {
@@ -120,17 +116,9 @@ impl<'a> Player for DominoesPlayer<'a> {
     }
 
     fn set_up(&mut self, state: &mut DominoesState) {
-        // Draw the starting hand size number of tiles from the boneyard
-        let hand_size = self.configuration.starting_hand_size();
-        for _ in 0..hand_size {
-            if let Some(tile) = state.draw_tile() {
-                self.hand.add_tile(tile);
-                self.remove_hidden_tile(tile); // Remove drawn tile from hidden
-            }
-        }
     }
 
-    fn my_turn(&mut self, state: &DominoesState) -> (Action, DominoesState) {
+    fn my_turn(&mut self, state: &PlayerView) -> Action {
         // TODO: Implement dominoes-specific game logic
         // Rules is available as self.configuration: self.configuration.num_players, self.configuration.variation, etc.
         // Action history is available via state.get_actions()
@@ -142,26 +130,13 @@ impl<'a> Player for DominoesPlayer<'a> {
 
         match action {
             Some(action) => {
-                let new_state = state.apply(&action);
-                (action, new_state)
+                action
             }
             None => {
                 // No actions available, pass
-                let pass_action = Action::pass(self.player_id);
-                (pass_action, state.clone())
+                Action::pass(self.player_id)
             }
         }
-    }
-
-    fn has_playable_tile(&self, state: &DominoesState) -> bool {
-        self.hand
-            .tiles()
-            .iter()
-            .any(|tile| state.can_play_tile(tile, None))
-    }
-
-    fn hand(&self) -> &Hand {
-        &self.hand
     }
 
     fn name(&self) -> &str {
@@ -187,8 +162,6 @@ mod tests {
         assert_eq!(player.hidden_tiles().len(), configuration.set_size());
         assert_eq!(player.hidden_tiles(), configuration.all_tiles());
         // Test that hand is initially empty
-        assert_eq!(player.hand.len(), 0);
-        assert_eq!(player.hand.tiles().len(), 0);
     }
 
     #[test]
@@ -207,7 +180,7 @@ mod tests {
 
         // Test that my_turn method exists and returns expected types
         // Focus on DominoesPlayer's implementation, not external dependencies
-        let (returned_action, new_state) = player.my_turn(&state);
+        let returned_action = player.my_turn(&state);
 
         // Test DominoesPlayer's specific behavior: should return pass action in stub implementation
         assert_eq!(returned_action.player_id, 1);

@@ -4,8 +4,8 @@
 //! It encapsulates the current state of a dominoes game, including the layout, boneyard, player turns, and game status.
 
 use crate::{Action, ZHash};
-use hidden_game_player::{PlayerId, State};
-use rules::{Boneyard, Configuration, Layout, Tile};
+use hidden_game_player::{PlayerId, self};
+use rules::{Boneyard, Configuration, Hand, Layout, Tile};
 
 /// A concrete implementation of hidden_game_player::State for dominoes games
 #[derive(Debug, Clone)]
@@ -14,6 +14,8 @@ pub struct DominoesState {
     pub layout: Layout,
     /// The boneyard
     pub boneyard: Boneyard,
+    /// List of tiles that each player currently holds in their hand
+    pub hands: Vec<Hand>,
     /// Whose turn is next (player ID)
     pub whose_turn: u8,
     /// State fingerprint
@@ -26,7 +28,7 @@ pub struct DominoesState {
     pub winner: Option<u8>,
 }
 
-impl State for DominoesState {
+impl hidden_game_player::State for DominoesState {
     type Action = Action;
 
     fn fingerprint(&self) -> u64 {
@@ -77,6 +79,7 @@ impl DominoesState {
         Self {
             layout: Layout::new(configuration),
             boneyard: Boneyard::new(configuration),
+            hands: vec![Hand::default(); configuration.num_players() as usize],
             whose_turn: PlayerId::ALICE as u8,
             fingerprint: ZHash::default(),
             consecutive_passes: 0,
@@ -86,11 +89,10 @@ impl DominoesState {
     }
 
     /// Returns a view of the state for a specific player
-    ///
-    /// Returns a view of the state for a specific player
-    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { self, player_id } }
+    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { state: self, player_id } }
 
-    fn public(&self) -> PublicView<'_> { PublicView { self } }
+    /// Returns a public view of the state containing only information visible to all players
+    fn public(&self) -> PublicView<'_> { PublicView { state: self } }
 
     /// Checks if a tile can be played on the current layout
     ///
@@ -321,7 +323,7 @@ impl DominoesState {
 
 
 /// A view of the state for a specific player
-struct PlayerView<'a> {
+pub struct PlayerView<'a> {
     state: &'a mut DominoesState,
     player_id: u8,
 }
@@ -330,21 +332,41 @@ impl<'a> PlayerView<'a> {
     /// Returns a reference to the layout of the game
     pub fn layout(&self) -> &Layout { &self.state.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.count() }
     /// Returns a reference to the player's own hand
-    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize] }
+    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize].tiles() }
     /// Returns a mutable reference to the player's own hand
-    pub fn hand_mut(&mut self) -> &mut Vec<Tile> { &mut self.state.hands[self.player_id as usize] }
+    pub fn hand_mut(self: &mut Self) -> &mut [Tile] { self.state.hands[self.player_id as usize].tiles_mut() }
     /// Returns an iterator over the sizes of each player's hand
     pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+        self.state.hands.iter().map(|hand| hand.tiles().len())
+    }
+}
+
+impl hidden_game_player::State for PlayerView<'_> {
+    type Action = Action;
+
+    fn fingerprint(&self) -> u64 {
+        self.state.fingerprint.into()
+    }
+
+    fn whose_turn(&self) -> u8 {
+        self.state.whose_turn()
+    }
+
+    fn is_terminal(&self) -> bool {
+        self.state.game_is_over
+    }
+
+    fn apply(&self, action: &Self::Action) -> Self {
+        self.state.apply(action).player(self.player_id)
     }
 }
 
 /// A public view of the state
 ///
 /// This view exposes only information that is public to all players, hiding private information such as other players' hands.
-struct PublicView<'a> {
+pub struct PublicView<'a> {
     state: &'a DominoesState,
 }
 
@@ -352,10 +374,10 @@ impl<'a> PublicView<'a> {
     /// Returns a reference to the layout of the game
     pub fn layout(&self) -> &Layout { &self.state.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.count() }
     /// Returns an iterator over the sizes of each player's hand
     pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+        self.state.hands.iter().map(|hand| hand.tiles().len())
     }
 }
 

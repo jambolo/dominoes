@@ -1,9 +1,8 @@
 //! Module defining the Player trait and related functionality
 //!
 
-use crate::Hand;
 use dominoes_state::{Action, DominoesState};
-use rules::Tile;
+use rules::{Hand, Tile};
 
 /// Base trait for all players in the game
 ///
@@ -24,25 +23,20 @@ use rules::Tile;
 ///
 /// impl Player for MyPlayer {
 ///     fn reset(&mut self) {
-///         self.hand = Hand::new();
 ///     }
 ///
-///     fn set_up(&mut self, state: &mut DominoesState) {
+///     fn set_up(&mut self, state: &mut PlayerView<DominoesState>) {
 ///         // Draw starting tiles
 ///     }
 ///
-///     fn my_turn(&mut self, state: &DominoesState) -> (Action, DominoesState) {
+///     fn my_turn(&mut self, state: &PlayerView<DominoesState>) -> (Action) {
 ///         // Make a move
-///         (Action::pass(0), state.clone())
+///         (Action::pass(0))
 ///     }
 ///
-///     fn has_playable_tile(&self, state: &DominoesState) -> bool {
+///     fn has_playable_tile(&self, state: &PlayerView<DominoesState>) -> bool {
 ///         // Check if player can make a move
 ///         true
-///     }
-///
-///     fn hand(&self) -> &Hand {
-///         &self.hand
 ///     }
 ///
 ///     fn name(&self) -> &str {
@@ -101,7 +95,7 @@ pub trait Player {
     /// # impl MyPlayer {
     /// #   fn has_playable_tile(&self, state: &DominoesState) -> bool { false }
     /// #   fn choose_tile_to_play(&self, state: &DominoesState) -> rules::Tile { rules::Tile::from((1,1)) }
-    /// fn my_turn(&mut self, state: &DominoesState) -> (Action, DominoesState) {
+    /// fn my_turn(&mut self, state: &PlayerView<DominoesState>) -> (Action) {
     ///     if self.has_playable_tile(state) {
     ///         // Play a tile
     ///         let tile = self.choose_tile_to_play(state);
@@ -115,7 +109,7 @@ pub trait Player {
     /// }
     /// # }
     /// ```
-    fn my_turn(&mut self, state: &DominoesState) -> (Action, DominoesState);
+    fn my_turn(&mut self, state: &PlayerView<DominoesState>) -> (Action);
 
     /// Returns true if the player has at least one tile that can be played
     ///
@@ -135,13 +129,13 @@ pub trait Player {
     /// # use player::Hand;
     /// # struct MyPlayer { hand: Hand }
     /// # impl MyPlayer {
-    /// fn has_playable_tile(&self, state: &DominoesState) -> bool {
+    /// fn has_playable_tile(&self, state: &PlayerView<DominoesState>) -> bool {
     ///     self.hand.tiles().iter()
     ///         .any(|tile| state.can_play_tile(tile, None))
     /// }
     /// # }
     /// ```
-    fn has_playable_tile(&self, state: &DominoesState) -> bool;
+    fn has_playable_tile(&self, state: &PlayerView<DominoesState>) -> bool;
 
     /// Returns the player's hand
     ///
@@ -202,9 +196,8 @@ pub trait Player {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Hand;
-    use dominoes_state::{Action, DominoesState};
-    use rules::{Configuration, Tile};
+    use dominoes_state::{Action, DominoesState, PlayerView};
+    use rules::{Configuration, Hand, Tile};
 
     // Test implementation of Player trait
     struct TestPlayer {

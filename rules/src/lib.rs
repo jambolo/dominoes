@@ -17,11 +17,13 @@
 
 pub mod boneyard;
 pub mod configuration;
+pub mod hand;
 pub mod layout;
 pub mod tile;
 
 pub use boneyard::*;
 pub use configuration::*;
+pub use hand::*;
 pub use layout::*;
 pub use tile::*;
 
