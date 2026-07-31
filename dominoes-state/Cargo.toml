@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-ego-tree = "0.10"
-game-player = { path = "../game-player" }
+ego-tree = "0.11"
+game-player = { workspace = true }
 multimap = "0.10"
-rand = "0.9"
-rand_chacha = "0.9"
+rand = "0.10"
+rand_chacha = "0.10"
 rules = { path = "../rules" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

@@ -8,8 +8,8 @@ use rules::{self, Tile};
 
 /// Represents an action taken by a player
 ///
-/// An action captures what a player did during their turn, including any tiles drawn from the boneyard and any tiles played on
-/// the layout.
+/// An action captures what a player did during their turn, including any tiles drawn from the boneyard and any tiles played on the
+/// layout.
 ///
 /// # Examples
 /// ```rust
@@ -25,7 +25,7 @@ use rules::{self, Tile};
 /// // Player passes their turn
 /// let pass_action = Action::pass(0);
 /// ```
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Action {
     /// The ID of the player who took this action
     pub player_id: u8,
@@ -33,16 +33,6 @@ pub struct Action {
     pub tile_drawn: Option<Tile>,
     /// The tile that was played on the layout during this action, if any
     pub tile_played: Option<(Tile, Option<u8>)>,
-}
-
-impl Default for Action {
-    fn default() -> Self {
-        Self {
-            player_id: 0,
-            tile_drawn: None,
-            tile_played: None,
-        }
-    }
 }
 
 impl Action {
@@ -121,8 +111,8 @@ impl Action {
     /// A new Action representing a play-only turn
     ///
     /// # Panics
-    /// This function will panic if the tile is not a double and no end value is provided.
-    /// This function will also panic if the provided end does not match either side of the tile.
+    /// This function will panic if the tile is not a double and no end value is provided. This function will also panic if the
+    /// provided end does not match either side of the tile.
     ///
     /// # Examples
     /// ```rust
@@ -244,8 +234,8 @@ impl Display for Action {
 
 /// A history of actions
 ///
-/// The History struct maintains a chronological record of all actions taken by all players during a game. This can be used for
-/// game replay, analysis, or implementing undo functionality.
+/// The History struct maintains a chronological record of all actions taken by all players during a game. This can be used for game
+/// replay, analysis, or implementing undo functionality.
 ///
 /// # Examples
 /// ```rust
@@ -409,7 +399,6 @@ impl History {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -599,11 +588,11 @@ mod tests {
         let tile3 = Tile::from((3, 3));
 
         // Add sequence of actions: P0, P1, P0, P1, P0
-        history.add_action(Action::play(0, tile1, None));  // index 0
-        history.add_action(Action::draw(1, tile2));   // index 1
-        history.add_action(Action::pass(0));              // index 2
-        history.add_action(Action::play(1, tile3, None));  // index 3
-        history.add_action(Action::pass(0));              // index 4
+        history.add_action(Action::play(0, tile1, None)); // index 0
+        history.add_action(Action::draw(1, tile2)); // index 1
+        history.add_action(Action::pass(0)); // index 2
+        history.add_action(Action::play(1, tile3, None)); // index 3
+        history.add_action(Action::pass(0)); // index 4
 
         // Get actions after player 0's last action (should be empty)
         let after_player0 = history.get_actions_after_player(0);
@@ -633,10 +622,10 @@ mod tests {
         let tile2 = Tile::from((3, 4));
 
         // Sequence: P0, P1, P0, P1
-        history.add_action(Action::play(0, tile1, Some(1)));  // index 0
-        history.add_action(Action::draw(1, tile2));   // index 1 - last P1 action
-        history.add_action(Action::pass(0));              // index 2
-        history.add_action(Action::pass(0));              // index 3
+        history.add_action(Action::play(0, tile1, Some(1))); // index 0
+        history.add_action(Action::draw(1, tile2)); // index 1 - last P1 action
+        history.add_action(Action::pass(0)); // index 2
+        history.add_action(Action::pass(0)); // index 3
 
         // Get actions after player 1's last action (indices 2 and 3)
         let after_player1 = history.get_actions_after_player(1);

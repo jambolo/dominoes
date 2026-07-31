@@ -6,9 +6,9 @@ use rules::Tile;
 use std::collections::HashMap;
 
 // Size and spacing constants for tiles
-const TILE_SIZE: Size = Size::new(640.0, 1280.0);  // Size of tile in model space
-const SPACING: f32 = 8.0;                           // Space between tiles in model space
-const TILE_OFFSET_X: f32 = TILE_SIZE.width / 2.0 + SPACING;  // Distance from center to edge plus spacing
+const TILE_SIZE: Size = Size::new(640.0, 1280.0); // Size of tile in model space
+const SPACING: f32 = 8.0; // Space between tiles in model space
+const TILE_OFFSET_X: f32 = TILE_SIZE.width / 2.0 + SPACING; // Distance from center to edge plus spacing
 const TILE_OFFSET_Y: f32 = TILE_SIZE.height / 2.0 + SPACING; // Distance from center to edge plus spacing
 
 /// Represents one of the four sides of a domino tile for attachment and rotation purposes.
@@ -82,8 +82,8 @@ impl Placement {
     /// The first tile has no parent to attach to and is placed sideways at (0,0) with top/bottom attachments available.
     fn new_root() -> Self {
         Self {
-            position: Vector::ZERO, // Centered
-            rotation: TileSide::Top, // Sideways
+            position: Vector::ZERO,                             // Centered
+            rotation: TileSide::Top,                            // Sideways
             attachments: vec![TileSide::Top, TileSide::Bottom], // Order is always Top then Bottom
         }
     }
@@ -97,22 +97,15 @@ impl Placement {
     ///
     /// # Returns
     /// A new placement for the child tile
-    fn new_child(
-        child_tile: &Tile,
-        parent_tile: &Tile,
-        parent_placement: &mut Placement
-    ) -> Self {
+    fn new_child(child_tile: &Tile, parent_tile: &Tile, parent_placement: &mut Placement) -> Self {
         let parent_tuple = parent_tile.as_tuple();
-        let (attach_value, _) = child_tile
-            .matches(parent_tile)
-            .expect("Child tile must match parent tile");
+        let (attach_value, _) = child_tile.matches(parent_tile).expect("Child tile must match parent tile");
 
-        let parent_attachment =
-            get_parent_attachment(&parent_tuple, attach_value, &mut parent_placement.attachments);
+        let parent_attachment = get_parent_attachment(&parent_tuple, attach_value, &mut parent_placement.attachments);
         let parent_attachment_offset = attachment_offset(parent_attachment);
 
-        // Get the rotated child's position relative to the unrotated parent and then rotate by the parent's rotation
-        // and then translate from the parent's position.
+        // Get the rotated child's position relative to the unrotated parent and then rotate by the parent's rotation and then
+        // translate from the parent's position.
         let child_tuple = child_tile.as_tuple();
         let mut child_attachments = vec![TileSide::Top, TileSide::Bottom]; // Order is always Top then Bottom
         let child_attachment = get_child_attachment(&child_tuple, attach_value, &mut child_attachments);
@@ -193,9 +186,7 @@ impl SceneGraph {
             .fold(PlacementMap::default(), |mut placements, node| {
                 let placement = match node.parent() {
                     Some(parent) => {
-                        let parent_placement = placements
-                            .get_mut(&parent.id())
-                            .expect("Parent placement must exist");
+                        let parent_placement = placements.get_mut(&parent.id()).expect("Parent placement must exist");
                         Placement::new_child(node.value(), parent.value(), parent_placement)
                     }
                     None => Placement::new_root(),
@@ -301,6 +292,7 @@ fn get_child_attachment(child_tuple: &(u8, u8), value: u8, attachments: &mut Vec
 // Calculates the rotation needed to align a child's attachment with a parent's attachment.
 fn child_attachment_to_parent_rotation(child: TileSide, parent: TileSide) -> TileSide {
     // To connect, child's attachment must face opposite direction of parent's attachment
+
     // Formula: (parent + 2 - child) % 4 gives the rotation needed
     TileSide::from((i8::from(parent) + 2 - i8::from(child)) % 4)
 }
@@ -373,10 +365,22 @@ mod tests {
 
     #[test]
     fn test_child_attachment_to_parent_rotation() {
-        assert_eq!(child_attachment_to_parent_rotation(TileSide::Left, TileSide::Right), TileSide::Right);
-        assert_eq!(child_attachment_to_parent_rotation(TileSide::Right, TileSide::Right), TileSide::Left);
-        assert_eq!(child_attachment_to_parent_rotation(TileSide::Top, TileSide::Bottom), TileSide::Right);
-        assert_eq!(child_attachment_to_parent_rotation(TileSide::Bottom, TileSide::Top), TileSide::Right);
+        assert_eq!(
+            child_attachment_to_parent_rotation(TileSide::Left, TileSide::Right),
+            TileSide::Right
+        );
+        assert_eq!(
+            child_attachment_to_parent_rotation(TileSide::Right, TileSide::Right),
+            TileSide::Left
+        );
+        assert_eq!(
+            child_attachment_to_parent_rotation(TileSide::Top, TileSide::Bottom),
+            TileSide::Right
+        );
+        assert_eq!(
+            child_attachment_to_parent_rotation(TileSide::Bottom, TileSide::Top),
+            TileSide::Right
+        );
     }
 
     #[test]

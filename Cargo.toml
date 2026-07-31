@@ -3,10 +3,12 @@ resolver = "2"
 members = [
     "dominoes-state",
     "game",
-    "game-player",
     "player",
     "rules"
 ]
+
+[workspace.dependencies]
+game-player = { git = "https://github.com/jambolo/game-player.git", tag = "v0.4.0" }
 
 [profile.dev]
 debug = true

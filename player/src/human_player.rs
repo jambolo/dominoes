@@ -4,8 +4,8 @@
 
 use std::io::{self, Write};
 
-use dominoes_state::{Action, DominoesState};
 use crate::{Hand, Player};
+use dominoes_state::{Action, DominoesState};
 use rules::{Configuration, Tile};
 
 /// A concrete implementation of Player for human players
@@ -37,8 +37,8 @@ pub struct HumanPlayer<'a> {
 impl<'a> HumanPlayer<'a> {
     /// Creates a new human player with the given configuration
     ///
-    /// Initializes a new human player with an empty hand and the specified name.
-    /// The player will use console input/output for interaction during gameplay.
+    /// Initializes a new human player with an empty hand and the specified name. The player will use console input/output for
+    /// interaction during gameplay.
     ///
     /// # Arguments
     ///
@@ -80,9 +80,7 @@ impl<'a> HumanPlayer<'a> {
             io::stdout().flush().unwrap();
 
             let mut input = String::new();
-            io::stdin()
-                .read_line(&mut input)
-                .expect("Failed to read input");
+            io::stdin().read_line(&mut input).expect("Failed to read input");
 
             let tile_index: usize = match input.trim().parse() {
                 Ok(index) if index < self.hand.tiles().len() => index,
@@ -103,9 +101,7 @@ impl<'a> HumanPlayer<'a> {
             io::stdout().flush().unwrap();
 
             let mut end_input = String::new();
-            io::stdin()
-                .read_line(&mut end_input)
-                .expect("Failed to read input");
+            io::stdin().read_line(&mut end_input).expect("Failed to read input");
 
             let end: u8 = match end_input.trim().parse() {
                 Ok(end_val) if end_val <= self.configuration.set_id() => end_val,
@@ -149,11 +145,7 @@ impl<'a> HumanPlayer<'a> {
                 .iter()
                 .map(|&e| {
                     let count = state.layout.open_count(e);
-                    if count > 1 {
-                        format!("{e}x{count}")
-                    } else {
-                        format!("{e}")
-                    }
+                    if count > 1 { format!("{e}x{count}") } else { format!("{e}") }
                 })
                 .collect::<Vec<_>>()
                 .join(", ")
@@ -216,10 +208,7 @@ impl<'a> Player for HumanPlayer<'a> {
     }
 
     fn has_playable_tile(&self, state: &DominoesState) -> bool {
-        self.hand
-            .tiles()
-            .iter()
-            .any(|tile| state.can_play_tile(tile, None))
+        self.hand.tiles().iter().any(|tile| state.can_play_tile(tile, None))
     }
 
     fn hand(&self) -> &Hand {
@@ -253,8 +242,8 @@ mod tests {
         let mut player = HumanPlayer::new(0, &configuration, "Test Player");
         let state = DominoesState::new(&configuration);
 
-        // Test that my_turn method exists and returns expected types
-        // Focus on HumanPlayer's implementation, not external dependencies
+        // Test that my_turn method exists and returns expected types. Focus on HumanPlayer's implementation, not external
+        // dependencies
         let (returned_action, _new_state) = player.my_turn(&state);
 
         // Test HumanPlayer's specific behavior: should return pass action in stub implementation
@@ -267,15 +256,12 @@ mod tests {
         let configuration = Configuration::default();
         let player = HumanPlayer::new(0, &configuration, "Test Player");
 
-        // Test that HumanPlayer stores the configuration reference correctly
-        // This verifies our constructor works and configuration is accessible
+        // Test that HumanPlayer stores the configuration reference correctly. This verifies our constructor works and configuration
+        // is accessible
         assert_eq!(player.configuration.num_players(), configuration.num_players());
         assert_eq!(player.configuration.variation(), configuration.variation());
         assert_eq!(player.configuration.set_id(), configuration.set_id());
-        assert_eq!(
-            player.configuration.starting_hand_size(),
-            configuration.starting_hand_size()
-        );
+        assert_eq!(player.configuration.starting_hand_size(), configuration.starting_hand_size());
     }
 
     #[test]
@@ -297,7 +283,7 @@ mod tests {
         assert_eq!(state.boneyard.count(), 21);
 
         // Test hand management functions
-        if let Some(&first_tile) = player.hand.tiles().get(0) {
+        if let Some(&first_tile) = player.hand.tiles().first() {
             assert!(player.hand.contains(&first_tile));
             player.hand.remove_tile(&first_tile);
             assert!(!player.hand.contains(&first_tile));
@@ -335,10 +321,7 @@ mod tests {
         assert_eq!(player.configuration.num_players(), configuration.num_players());
         assert_eq!(player.configuration.variation(), configuration.variation());
         assert_eq!(player.configuration.set_id(), configuration.set_id());
-        assert_eq!(
-            player.configuration.starting_hand_size(),
-            configuration.starting_hand_size()
-        );
+        assert_eq!(player.configuration.starting_hand_size(), configuration.starting_hand_size());
     }
 
     #[test]
@@ -382,18 +365,12 @@ mod tests {
         // Test with various configurations
         let config_traditional = Configuration::new(2, rules::Variation::Traditional, 6, 7);
         let player_traditional = HumanPlayer::new(0, &config_traditional, "Traditional Player");
-        assert_eq!(
-            player_traditional.configuration.variation(),
-            rules::Variation::Traditional
-        );
+        assert_eq!(player_traditional.configuration.variation(), rules::Variation::Traditional);
         assert_eq!(player_traditional.configuration.starting_hand_size(), 7);
 
         let config_blind = Configuration::new(4, rules::Variation::Blind, 9, 10);
         let player_blind = HumanPlayer::new(1, &config_blind, "Blind Player");
-        assert_eq!(
-            player_blind.configuration.variation(),
-            rules::Variation::Blind
-        );
+        assert_eq!(player_blind.configuration.variation(), rules::Variation::Blind);
         assert_eq!(player_blind.configuration.starting_hand_size(), 10);
         assert_eq!(player_blind.configuration.num_players(), 4);
         assert_eq!(player_blind.configuration.set_id(), 9);
@@ -409,9 +386,8 @@ mod tests {
         assert!(player.hand.tiles().is_empty());
         assert!(!player.hand.contains(&rules::Tile::from((0, 0))));
 
-        // Hand should be ready to receive tiles
-        // (We can't test adding tiles here since hand.add_tile() isn't public,
-        // but we can verify the hand exists and is properly initialized)
+        // Hand should be ready to receive tiles. (We can't test adding tiles here since hand.add_tile() isn't public, but we can
+        // verify the hand exists and is properly initialized)
     }
 
     #[test]
@@ -497,8 +473,7 @@ mod tests {
         assert_eq!(player.hand.len(), 0);
         assert_eq!(state.boneyard.count(), 0);
 
-        // This would require user input, so we can't easily test the full method
-        // But we can verify the preconditions
+        // This would require user input, so we can't easily test the full method, but we can verify the preconditions
         assert!(!player.has_playable_tile(&state));
     }
 
@@ -513,7 +488,7 @@ mod tests {
 
         player.set_up(&mut state);
         assert_eq!(player.name(), "Consistency Test"); // Name unchanged
-        assert!(player.hand.len() > 0); // Has tiles after setup
+        assert!(!player.hand.is_empty()); // Has tiles after setup
 
         // has_playable_tile should work after setup
         let _has_playable = player.has_playable_tile(&state);

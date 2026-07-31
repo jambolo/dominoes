@@ -4,14 +4,14 @@
 //!
 //! See [`parse`] for detailed documentation on the layout string syntax and rules.
 
-use regex::Regex;
 use ego_tree::{NodeMut, NodeRef, Tree};
+use regex::Regex;
 use rules::{self, Tile};
 
 /// Error type returned when parsing a domino layout string fails.
 ///
-/// This error provides detailed information about what went wrong during parsing,
-/// including a human-readable message and the character position where the error occurred.
+/// This error provides detailed information about what went wrong during parsing, including a human-readable message and the
+/// character position where the error occurred.
 ///
 /// # Examples
 ///
@@ -36,8 +36,8 @@ pub struct ParseError {
 impl std::fmt::Display for ParseError {
     /// Formats the error with position and message information.
     ///
-    /// This provides a user-friendly error message that includes both the
-    /// character position where the error occurred and a descriptive message.
+    /// This provides a user-friendly error message that includes both the character position where the error occurred and a
+    /// descriptive message.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Parse error at position {}: {}", self.position, self.message)
     }
@@ -167,13 +167,13 @@ impl<'a> ParseState<'a> {
 
     // Validate connection if we have a parent
     fn validate_connection(&self, parent_end: Option<u8>, from: u8, to: u8) -> Result<(), ParseError> {
-        if let Some(expected) = parent_end {
-            if from != expected {
-                return Err(self.error(&format!(
-                        "Invalid connection: tile {}|{} first number ({}) must match the preceding end ({})",
-                        from, to, from, expected
-                    )));
-            }
+        if let Some(expected) = parent_end
+            && from != expected
+        {
+            return Err(self.error(&format!(
+                "Invalid connection: tile {}|{} first number ({}) must match the preceding end ({})",
+                from, to, from, expected
+            )));
         }
         Ok(())
     }
@@ -234,8 +234,8 @@ impl<'a> ParseState<'a> {
 /// - The two numbers in a `<tile>` are different
 /// - The two numbers in a `<double>` are the same
 /// - A `<group>` contains 1 to 3 chains
-/// - When tiles are connected with "-", the left number of the succeeding tile must match the right number of the preceding
-///   tile (the open end).
+/// - When tiles are connected with "-", the left number of the succeeding tile must match the right number of the preceding tile
+///   (the open end).
 /// - In the group following a double, the left number of each first tile of each chain must match the double's value.
 /// - Whitespace is ignored.
 ///
@@ -275,11 +275,6 @@ impl<'a> ParseState<'a> {
 /// // Single tile
 /// let tree = parse("5|6").unwrap();
 /// ```
-///
-
-
-
-
 pub fn parse(input: &str) -> Result<Tree<Tile>, ParseError> {
     let mut state = ParseState::new(input);
     let layout = state.parse_chain(None)?;
@@ -312,9 +307,7 @@ mod tests {
 
     /// Helper function to verify tree structure by walking it and collecting tiles in order
     fn collect_tiles_preorder(tree: &Tree<Tile>) -> Vec<Tile> {
-        tree.root().descendants()
-            .map(|node| *node.value())
-            .collect()
+        tree.root().descendants().map(|node| *node.value()).collect()
     }
 
     /// Helper function to count the number of children at the root
@@ -387,8 +380,8 @@ mod tests {
     #[test]
     fn test_parse_double_with_multiple_branches() {
         let result = parse("2|2=(2|3,2|4,2|5)");
-        if result.is_err() {
-            println!("Error: {}", result.as_ref().unwrap_err());
+        if let Err(e) = &result {
+            println!("Error: {e}");
         }
         assert!(result.is_ok());
 
@@ -418,6 +411,7 @@ mod tests {
     #[test]
     fn test_parse_non_canonical_tiles_in_chain() {
         // Test valid connections where tiles can be non-canonical
+
         // "5|1-1|6-6|2": 5|1 has open end 1, 1|6 connects with 1 and has open end 6, 6|2 connects with 6
         let result = parse("5|1-1|6-6|2");
         assert!(result.is_ok());
@@ -434,6 +428,7 @@ mod tests {
     #[test]
     fn test_parse_error_invalid_non_canonical_connection() {
         // Test that invalid non-canonical connections are rejected
+
         // "5|1-3|6": 5|1 has open end 1, but 3|6 starts with 3, not 1
         let result = parse("5|1-3|6");
         assert!(result.is_err());
@@ -446,9 +441,13 @@ mod tests {
     #[test]
     fn test_parse_non_canonical_tiles_in_branches() {
         // Test that non-canonical tiles in double branches are rejected
+
         // "2|2=(4|2,5|2,3|2)" is invalid because 4, 5, 3 don't match the expected 2
         let result = parse("2|2=(4|2,5|2,3|2)");
-        assert!(result.is_err(), "Should fail because 4, 5, 3 don't match expected connection 2");
+        assert!(
+            result.is_err(),
+            "Should fail because 4, 5, 3 don't match expected connection 2"
+        );
 
         let error = result.unwrap_err();
         assert!(error.message.contains("Invalid connection"));
@@ -471,6 +470,7 @@ mod tests {
     #[test]
     fn test_parse_mixed_canonical_and_non_canonical() {
         // Test that invalid connections are rejected
+
         // "1|2-2|2=(6|2,2|3,5|2)" has invalid connections: 6 != 2 and 5 != 2
         let result = parse("1|2-2|2=(6|2,2|3,5|2)");
         assert!(result.is_err(), "Should fail because 6 != 2 and 5 != 2");
@@ -540,6 +540,7 @@ mod tests {
     #[test]
     fn test_parse_max_values() {
         // Test with values that are within the ordinal system limits
+
         // Use MAX_PIPS as the maximum valid domino value
         let result = parse(&format!("0|{}-{}|{}", rules::MAX_PIPS, rules::MAX_PIPS, rules::MAX_PIPS));
         assert!(result.is_ok());
@@ -559,9 +560,11 @@ mod tests {
         assert!(result.is_err());
 
         let error = result.unwrap_err();
-        assert!(error.message.contains("ordinal must not exceed limits") ||
-                error.message.contains("Ordinal exceeds") ||
-                error.message.contains(&format!("out of range (0-{})", rules::MAX_PIPS)));
+        assert!(
+            error.message.contains("ordinal must not exceed limits")
+                || error.message.contains("Ordinal exceeds")
+                || error.message.contains(&format!("out of range (0-{})", rules::MAX_PIPS))
+        );
     }
 
     // Error tests

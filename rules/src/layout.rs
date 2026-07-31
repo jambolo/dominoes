@@ -2,11 +2,11 @@
 //!
 //! This module provides the Layout struct for managing the layout of domino tiles.
 
-use std::fmt::{self, Display, Formatter};
-use multimap::MultiMap;
 use ego_tree;
-use serde::{Serialize, Deserialize, Deserializer, Serializer};
-use serde::de::{self, Visitor, MapAccess};
+use multimap::MultiMap;
+use serde::de::{self, MapAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{self, Display, Formatter};
 
 use crate::{Configuration, Tile};
 
@@ -96,7 +96,10 @@ impl<'de> Deserialize<'de> for Layout {
     where
         D: Deserializer<'de>,
     {
-        enum Field { Nodes, SetId }
+        enum Field {
+            Nodes,
+            SetId,
+        }
 
         impl<'de> Deserialize<'de> for Field {
             fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
@@ -226,8 +229,7 @@ impl Layout {
 
     /// Returns the number of open ends in the layout for the specified end value.
     ///
-    /// This count represents how many attachment points are available for tiles that have the specified value on one of their
-    /// ends.
+    /// This count represents how many attachment points are available for tiles that have the specified value on one of their ends.
     ///
     /// # Arguments
     /// * `end` - The domino value to check (e.g., 0-6 for standard double-six set)
@@ -391,9 +393,7 @@ impl Layout {
 
         self.open
             .iter()
-            .filter_map(|(node_index, value)| {
-                (*value == end_value).then_some(*node_index)
-            })
+            .filter_map(|(node_index, value)| (*value == end_value).then_some(*node_index))
             .collect()
     }
 
@@ -432,8 +432,7 @@ impl Layout {
     /// ```
     ///
     /// # Panics
-    /// Panics if any non-root node (index > 0) has a `None` parent, as this violates the
-    /// expected layout structure.
+    /// Panics if any non-root node (index > 0) has a `None` parent, as this violates the expected layout structure.
     pub fn to_tree(&self) -> Option<ego_tree::Tree<Tile>> {
         if self.nodes.is_empty() {
             return None;
@@ -468,7 +467,7 @@ impl Layout {
     ///
     /// This method is used during deserialization to reconstruct the derived state from the serialized nodes. It analyzes the tree
     /// structure to determine which ends are open and updates the counts accordingly.
-    fn rebuild_open_and_end_counts(&mut self) -> Result<(), String>{
+    fn rebuild_open_and_end_counts(&mut self) -> Result<(), String> {
         self.open.clear();
         self.end_counts.fill(0);
 
@@ -478,9 +477,8 @@ impl Layout {
 
         // For each node, determine its open ends based on its connectivity
         for (node_index, node) in self.nodes.iter().enumerate() {
-            // Validate the children count
-            // Double tiles can have up to 2 children.
-            // Non-doubles can have up to 2 children if it is the root node (otherwise only 1).
+            // Validate the children count Double tiles can have up to 2 children. Non-doubles can have up to 2 children if it is
+            // the root node (otherwise only 1).
             if node.children.len() > 2 {
                 return Err(format!("Tile node {node_index} has more than 2 children"));
             }
@@ -518,8 +516,8 @@ impl Layout {
 
             // Determine open ends
             if node.tile.is_double() {
-                // For double tiles, both ends have the same value
-                // Total connections possible = 3, used = connections_a (since a == b)
+                // For double tiles, both ends have the same value Total connections possible = 3, used = connections_a (since a ==
+                // b)
                 let total_connections = connections_a; // connections_a == connections_b for doubles
                 let remaining_connections = 3 - total_connections;
 
@@ -548,9 +546,13 @@ impl Layout {
     // Removes a tile from the open list. Note that a double tile will have two entries with the same key, and only one of the
     // entries is removed.
     fn remove_from_open(&mut self, parent: usize, value: u8) {
-        let values = self.open.get_vec_mut(&parent)
+        let values = self
+            .open
+            .get_vec_mut(&parent)
             .unwrap_or_else(|| panic!("Parent {parent} not found in open list"));
-        let pos = values.iter().position(|&x| x == value)
+        let pos = values
+            .iter()
+            .position(|&x| x == value)
             .unwrap_or_else(|| panic!("Value {value} not found for parent {parent}"));
         values.remove(pos);
         // If the vector is now empty, we need to remove the key from the multimap
@@ -567,12 +569,14 @@ impl Layout {
         let mut result = format!("{a}|{b}");
 
         // Add the children recursively
-        if a == b && node.children.len() >= 1 {
+        if a == b && !node.children.is_empty() {
             // Double tile with children
             result.push_str("=(");
             for (i, &child) in node.children.iter().enumerate() {
                 let child_node = &self.nodes[child];
-                if i > 0 { result.push(','); }
+                if i > 0 {
+                    result.push(',');
+                }
                 result.push_str(&self.fmt_r(child_node, b));
             }
             result.push(')');
@@ -584,13 +588,12 @@ impl Layout {
 
         result
     }
-
 }
 
 /// Returns the layout as a human-readable string representation.
 ///
-/// Generates a textual representation showing how domino tiles are connected in the layout. The format uses specific notation
-/// to represent the tree structure:
+/// Generates a textual representation showing how domino tiles are connected in the layout. The format uses specific notation to
+/// represent the tree structure:
 /// - Single connections: `tile1-tile2`
 /// - Multiple branches: `tile=(branch1,branch2,branch3)`
 /// - Tiles shown as `a|b`
@@ -686,7 +689,7 @@ mod tests {
         assert!(layout.open.is_empty());
         assert_eq!(layout.end_counts.len(), 7); // 0..6 inclusive = 7 elements
     }
-        #[test]
+    #[test]
     fn test_attach_first_tile() {
         let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
@@ -833,10 +836,10 @@ mod tests {
 
         layout.attach(double_six, None);
         layout.attach(three_six, Some(0));
-        layout.attach(double_three, Some(1));  // Attach double-3 to the 3|6 tile
-        layout.attach(one_three, Some(2));     // Attach 1|3 to the double-3
-        layout.attach(three_five, Some(2));    // Attach 3|5 to the double-3 (creates branching)
-        layout.attach(two_five, Some(4));      // Attach 2|5 to the 3|5 tile
+        layout.attach(double_three, Some(1)); // Attach double-3 to the 3|6 tile
+        layout.attach(one_three, Some(2)); // Attach 1|3 to the double-3
+        layout.attach(three_five, Some(2)); // Attach 3|5 to the double-3 (creates branching)
+        layout.attach(two_five, Some(4)); // Attach 2|5 to the 3|5 tile
 
         assert_eq!(layout.to_string(), "6|6=(6|3-3|3=(3|1,3|5-5|2))");
     }
@@ -1108,17 +1111,18 @@ mod tests {
         layout.attach(double_five, Some(1));
 
         // Manually count open ends and compare with end_counts
-        let mut actual_counts = vec![0u8; 7];
+        let mut actual_counts = [0u8; 7];
         for (_, values) in layout.open.iter_all() {
             for &value in values {
                 actual_counts[value as usize] += 1;
             }
         }
 
-        for i in 0..7 {
-            assert_eq!(layout.end_counts[i], actual_counts[i],
-                    "Mismatch at index {}: end_counts={}, actual={}",
-                    i, layout.end_counts[i], actual_counts[i]);
+        for (i, (&expected, &actual)) in layout.end_counts.iter().zip(&actual_counts).enumerate() {
+            assert_eq!(
+                expected, actual,
+                "Mismatch at index {i}: end_counts={expected}, actual={actual}"
+            );
         }
     }
 
@@ -1286,8 +1290,8 @@ mod tests {
 
         // Attach children in specific order
         layout.attach(double_four, None);
-        layout.attach(four_one, Some(0));    // First child
-        layout.attach(four_six, Some(0));    // Second child
+        layout.attach(four_one, Some(0)); // First child
+        layout.attach(four_six, Some(0)); // Second child
 
         let tree = layout.to_tree().unwrap();
 
@@ -1352,12 +1356,7 @@ mod tests {
     fn test_to_tree_preserves_tile_data() {
         let configuration = crate::Configuration::default();
         let mut layout = Layout::new(&configuration);
-        let tiles = vec![
-            create_tile(6, 6),
-            create_tile(3, 6),
-            create_tile(1, 3),
-            create_tile(1, 2),
-        ];
+        let tiles = [create_tile(6, 6), create_tile(3, 6), create_tile(1, 3), create_tile(1, 2)];
 
         layout.attach(tiles[0], None);
         layout.attach(tiles[1], Some(0));
@@ -1414,8 +1413,7 @@ mod tests {
         layout2.attach(three_two, Some(0)); // node 1
         layout2.attach(three_five, Some(0)); // node 2
 
-        // Node 1: open 2, Node 2: open 5
-        // After attaching, node 0 should have no open ends
+        // Node 1: open 2, Node 2: open 5 After attaching, node 0 should have no open ends
         assert!(layout2.get_nodes_with_open_end(3).is_empty());
         assert_eq!(layout2.get_nodes_with_open_end(2), vec![1]);
         assert_eq!(layout2.get_nodes_with_open_end(5), vec![2]);
@@ -1486,7 +1484,12 @@ mod tests {
         assert_eq!(deserialized.open_count(6), layout.open_count(6));
         assert_eq!(deserialized.open_count(3), layout.open_count(3));
         for i in 0..7 {
-            assert_eq!(deserialized.open_count(i), layout.open_count(i), "Open count mismatch for value {}", i);
+            assert_eq!(
+                deserialized.open_count(i),
+                layout.open_count(i),
+                "Open count mismatch for value {}",
+                i
+            );
         }
 
         // Verify specific open ends
@@ -1523,7 +1526,12 @@ mod tests {
 
         // Verify open ends are reconstructed correctly
         for i in 0..7 {
-            assert_eq!(deserialized.open_count(i), layout.open_count(i), "Open count mismatch for value {}", i);
+            assert_eq!(
+                deserialized.open_count(i),
+                layout.open_count(i),
+                "Open count mismatch for value {}",
+                i
+            );
         }
 
         // Specific checks for this layout
@@ -1564,12 +1572,22 @@ mod tests {
 
         let three_five = Tile::from((3, 5));
         layout.attach(three_five, Some(0));
-        println!("After attaching 3|5: open count 3 = {}, open count 5 = {}", layout.open_count(3), layout.open_count(5));
+        println!(
+            "After attaching 3|5: open count 3 = {}, open count 5 = {}",
+            layout.open_count(3),
+            layout.open_count(5)
+        );
 
         // Check node structure
         println!("Node 0 children: {:?}", layout.nodes[0].children);
-        println!("Node 1 parent: {:?}, children: {:?}", layout.nodes[1].parent, layout.nodes[1].children);
-        println!("Node 2 parent: {:?}, children: {:?}", layout.nodes[2].parent, layout.nodes[2].children);
+        println!(
+            "Node 1 parent: {:?}, children: {:?}",
+            layout.nodes[1].parent, layout.nodes[1].children
+        );
+        println!(
+            "Node 2 parent: {:?}, children: {:?}",
+            layout.nodes[2].parent, layout.nodes[2].children
+        );
 
         // Check what each node has open
         for i in 0..3 {

@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize, Serializer, Deserializer, de};
-use serde::de::{Visitor, SeqAccess};
+use serde::de::{SeqAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use std::fmt;
 
 use crate::*;
@@ -250,7 +250,11 @@ impl<'de> Deserialize<'de> for Tile {
                     return Err(de::Error::invalid_length(3, &self));
                 }
                 // Create the tile, supporting non-canonical form
-                if a < b { Ok(Tile::from((a, b))) } else { Ok(Tile::from((b, a))) }
+                if a < b {
+                    Ok(Tile::from((a, b)))
+                } else {
+                    Ok(Tile::from((b, a)))
+                }
             }
         }
 

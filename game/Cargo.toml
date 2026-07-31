@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-clap = "4.5"
+clap = "4.6"
 dominoes-state = { path = "../dominoes-state" }
-ego-tree = { version = "0.10", features=["serde"] }
-game-player = { path = "../game-player" }
-iced = { version = "0.13", features = ["canvas", "image"] }
+ego-tree = { version = "0.11", features=["serde"] }
+game-player = { workspace = true }
+iced = { version = "0.14", features = ["canvas", "image"] }
 player = { path = "../player" }
-regex = "1.11"
+regex = "1.13"
 rules = { path = "../rules" }
 serde = "1.0"
 serde_json = "1.0"

@@ -4,9 +4,8 @@ use crate::*;
 
 /// Configuration for a dominoes game session.
 ///
-/// This struct encapsulates all the settings needed to set up and run a domino game,
-/// including the game variation, number of players, domino set size, hand sizes,
-/// and the complete set of tiles available.
+/// This struct encapsulates all the settings needed to set up and run a domino game, including the game variation, number of
+/// players, domino set size, hand sizes, and the complete set of tiles available.
 ///
 /// # Examples
 /// ```rust
@@ -132,8 +131,8 @@ impl Configuration {
 
     /// Returns a slice containing all tiles in this game's domino set.
     ///
-    /// The tiles are in canonical order (by ordinal). This can be used to
-    /// initialize boneyards, validate tiles, or enumerate all possible tiles.
+    /// The tiles are in canonical order (by ordinal). This can be used to initialize boneyards, validate tiles, or enumerate all
+    /// possible tiles.
     ///
     /// # Examples
     /// ```

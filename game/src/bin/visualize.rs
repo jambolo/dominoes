@@ -31,8 +31,8 @@
 use clap::{Arg, Command as ClapCommand};
 use ego_tree::Tree;
 use iced::{
-    widget::canvas::{self, Canvas, Geometry},
     Element, Point, Rectangle, Task, Vector,
+    widget::canvas::{self, Canvas, Geometry},
 };
 use std::collections::HashMap;
 use std::path::Path;
@@ -71,8 +71,13 @@ fn main() -> iced::Result {
         println!("{json}");
         Ok(())
     } else {
-        iced::application("Dominoes Layout Visualizer", VisualizerApp::update, VisualizerApp::view)
-            .run_with(move || (VisualizerApp::new(&tree), Task::none()))
+        iced::application(
+            move || (VisualizerApp::new(&tree), Task::none()),
+            VisualizerApp::update,
+            VisualizerApp::view,
+        )
+        .title("Dominoes Layout Visualizer")
+        .run()
     }
 }
 
@@ -110,11 +115,8 @@ impl VisualizerApp {
     }
 
     /// Creates the view element for the visualizer.
-    fn view(&self) -> Element<()> {
-        Canvas::new(self)
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
-            .into()
+    fn view(&self) -> Element<'_, ()> {
+        Canvas::new(self).width(iced::Length::Fill).height(iced::Length::Fill).into()
     }
 
     /// Loads domino images for all tiles in a standard double-six set.
@@ -129,9 +131,9 @@ impl VisualizerApp {
                 let (a, b) = rules::ordinal_to_tuple(i as u8);
                 let image_path = format!("assets/domino-{a}{b}.png");
 
-                Path::new(&image_path).exists().then(|| {
-                    (i as u8, iced::widget::image::Handle::from_path(image_path))
-                })
+                Path::new(&image_path)
+                    .exists()
+                    .then(|| (i as u8, iced::widget::image::Handle::from_path(image_path)))
             })
             .collect()
     }

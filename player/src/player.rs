@@ -90,8 +90,8 @@ pub trait Player {
     /// - The action taken by the player
     /// - The new game state after the player's move
     ///
-    /// Note that this method may be called multiple times during a player's turn. For example, in the case of a player
-    /// needing to draw tiles, this method would be called once for each tile drawn.
+    /// Note that this method may be called multiple times during a player's turn. For example, in the case of a player needing to
+    /// draw tiles, this method would be called once for each tile drawn.
     ///
     /// # Examples
     /// ```rust

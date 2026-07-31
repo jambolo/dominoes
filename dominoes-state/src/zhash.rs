@@ -1,8 +1,8 @@
 //! Zobrist Hashing implementation for Dominoes
 //!
 //! This module provides a Zobrist hashing implementation specifically designed for domino games. Zobrist hashing is a technique
-//! used to create an uncorrelated and uniformly distributed value that uniquely represents a game state. The values are useful
-//! for indexing game states and detecting duplicates.
+//! used to create an uncorrelated and uniformly distributed value that uniquely represents a game state. The values are useful for
+//! indexing game states and detecting duplicates.
 //!
 //! # Overview
 //! The value combines three key components of domino game state:
@@ -30,10 +30,10 @@
 //! assert!(undefined_hash.is_undefined());
 //! ```
 
-use std::sync::LazyLock;
-use rand::{RngCore, SeedableRng};
+use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use rules::Layout;
+use std::sync::LazyLock;
 
 /// Type alias for Zobrist hash values
 ///
@@ -43,8 +43,8 @@ pub type Z = u64;
 /// Zobrist Hashing Calculator for Dominoes.
 ///
 /// # Properties
-/// - **Order Independent**: The same game state produces the same value regardless
-///   of the order in which moves were made to reach that state
+/// - **Order Independent**: The same game state produces the same value regardless of the order in which moves were made to reach
+///   that state
 /// - **Incremental**: Zobrist values can be updated incrementally as moves are made
 /// - **Collision Resistant**: 64-bit values provide strong collision resistance
 ///
@@ -184,8 +184,8 @@ impl ZHash {
 
     /// Updates the value to reflect a turn change
     ///
-    /// This method updates the value to reflect that it now the next player's turn.
-    /// Returns a mutable reference to self for method chaining.
+    /// This method updates the value to reflect that it now the next player's turn. Returns a mutable reference to self for method
+    /// chaining.
     ///
     /// # Returns
     /// Mutable reference to self for chaining operations
@@ -256,8 +256,8 @@ impl From<ZHash> for Z {
 
 // Lookup table for Zobrist hashes
 //
-// This structure contains pre-computed random hashes for all possible game state components. The hashes are generated once
-// at program startup using a seeded random number generator to ensure reproducible results.
+// This structure contains pre-computed random hashes for all possible game state components. The hashes are generated once at
+// program startup using a seeded random number generator to ensure reproducible results.
 //
 // Rather than requiring the set size to be specified, a maximum set size of 21 is assumed.
 struct ZTable {
@@ -474,7 +474,10 @@ mod tests {
         // Add 1 end value 6 three times (0 -> 1, 1 -> 2, 2 -> 3)
         let mut hash_1_thrice = ZHash::default();
         let original_hash_1_thrice_value = hash_1_thrice;
-        hash_1_thrice.change_end_count(6, 0, 1).change_end_count(6, 1, 2).change_end_count(6, 2, 3);
+        hash_1_thrice
+            .change_end_count(6, 0, 1)
+            .change_end_count(6, 1, 2)
+            .change_end_count(6, 2, 3);
         assert_ne!(hash_1_thrice, original_hash_1_thrice_value);
 
         // Add 3 end value 6s once (0 -> 3)
@@ -487,7 +490,10 @@ mod tests {
         assert_eq!(hash_1_thrice, hash_3_once);
 
         // Remove 1 end value 6 three times (3 -> 2, 2 -> 1, 1 -> 0)
-        hash_1_thrice.change_end_count(6, 3, 2).change_end_count(6, 2, 1).change_end_count(6, 1, 0);
+        hash_1_thrice
+            .change_end_count(6, 3, 2)
+            .change_end_count(6, 2, 1)
+            .change_end_count(6, 1, 0);
         assert_eq!(hash_1_thrice, original_hash_1_thrice_value);
 
         // Remove 3 end value 6s once (3 -> 0)

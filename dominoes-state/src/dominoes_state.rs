@@ -1,7 +1,7 @@
 //! Dominoes game state implementation module.
 //!
-//! This module defines the `DominoesState` struct which implements the `State` trait from the `game_player` crate.
-//! It encapsulates the current state of a dominoes game, including the layout, boneyard, player turns, and game status.
+//! This module defines the `DominoesState` struct which implements the `State` trait from the `game_player` crate. It encapsulates
+//! the current state of a dominoes game, including the layout, boneyard, player turns, and game status.
 
 use crate::{Action, ZHash};
 use game_player::{PlayerId, State};
@@ -33,23 +33,26 @@ impl State for DominoesState {
         self.fingerprint.into()
     }
 
-    fn whose_turn(&self) -> u8 {
-        self.whose_turn
+    fn whose_turn(&self) -> PlayerId {
+        if self.whose_turn == PlayerId::Alice as u8 {
+            PlayerId::Alice
+        } else {
+            PlayerId::Bob
+        }
     }
 
     fn is_terminal(&self) -> bool {
         self.game_is_over
     }
 
+    // `assert!(false)` rather than `unimplemented!()` keeps the draft body below from being flagged as unreachable.
+    #[allow(clippy::assertions_on_constants)]
     fn apply(&self, action: &Self::Action) -> Self {
         assert!(false, "apply() is not yet implemented for DominoesState");
         let mut new_state = self.clone();
         if action.tile_drawn.is_some() {
             let drawn_tile = new_state.draw_tile();
-            assert_eq!(
-                drawn_tile, action.tile_drawn,
-                "Drawn tile does not match action's drawn tile"
-            );
+            assert_eq!(drawn_tile, action.tile_drawn, "Drawn tile does not match action's drawn tile");
         }
         if let Some((tile, end)) = action.tile_played {
             new_state.play_tile(tile, end);
@@ -77,7 +80,7 @@ impl DominoesState {
         Self {
             layout: Layout::new(configuration),
             boneyard: Boneyard::new(configuration),
-            whose_turn: PlayerId::ALICE as u8,
+            whose_turn: PlayerId::Alice as u8,
             fingerprint: ZHash::default(),
             consecutive_passes: 0,
             game_is_over: false,
@@ -86,16 +89,21 @@ impl DominoesState {
     }
 
     /// Returns a view of the state for a specific player
-    ///
-    /// Returns a view of the state for a specific player
-    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { self, player_id } }
+    #[allow(dead_code)]
+    fn player(&mut self, player_id: u8) -> PlayerView<'_> {
+        PlayerView { state: self, player_id }
+    }
 
-    fn public(&self) -> PublicView<'_> { PublicView { self } }
+    /// Returns a public view of the state
+    #[allow(dead_code)]
+    fn public(&self) -> PublicView<'_> {
+        PublicView { state: self }
+    }
 
     /// Checks if a tile can be played on the current layout
     ///
-    /// Validates whether the specified tile can be legally placed on the layout. For empty layouts, only doubles can be played.
-    /// For non-empty layouts, the tile must match at least one open end.
+    /// Validates whether the specified tile can be legally placed on the layout. For empty layouts, only doubles can be played. For
+    /// non-empty layouts, the tile must match at least one open end.
     ///
     /// # Arguments
     /// * `tile` - The tile to check for playability
@@ -131,11 +139,9 @@ impl DominoesState {
             }
         } else {
             // If the layout is empty, a double can be played
+            //
             // TODO: Handle different variations of the game here
-            assert!(
-                end.is_none(),
-                "An end was specified for an empty layout. Something is wrong."
-            );
+            assert!(end.is_none(), "An end was specified for an empty layout. Something is wrong.");
             tile.is_double()
         }
     }
@@ -178,10 +184,7 @@ impl DominoesState {
     /// }
     /// ```
     pub fn play_tile(&mut self, tile: Tile, end: Option<u8>) {
-        assert!(
-            self.can_play_tile(&tile, end),
-            "Tile {tile} cannot be played on the layout"
-        );
+        assert!(self.can_play_tile(&tile, end), "Tile {tile} cannot be played on the layout");
 
         if let Some(matched_end) = end {
             // Find the index of a matching open end
@@ -206,17 +209,11 @@ impl DominoesState {
             // Update the fingerprint for the new end count already incremented by add_tile.
             let new_end_count = self.layout.open_count(new_end);
             assert!(new_end_count >= new_end_change);
-            self.fingerprint.change_end_count(
-                new_end,
-                new_end_count - new_end_change,
-                new_end_count,
-            );
+            self.fingerprint
+                .change_end_count(new_end, new_end_count - new_end_change, new_end_count);
         } else {
             // If no end specified, the tile must be a double and the layout must be empty
-            assert!(
-                self.layout.is_empty(),
-                "Layout is not empty; must specify an end to play on"
-            );
+            assert!(self.layout.is_empty(), "Layout is not empty; must specify an end to play on");
 
             // Place the tile in the layout
             let (new_end, new_end_change) = self.layout.attach(tile, None);
@@ -226,16 +223,15 @@ impl DominoesState {
 
             // Update the fingerprint for the new end count
             assert!(self.layout.open_count(new_end) == new_end_change);
-            self.fingerprint
-                .change_end_count(new_end, 0, new_end_change);
+            self.fingerprint.change_end_count(new_end, 0, new_end_change);
         }
         self.update_consecutive_passes(false); // Reset consecutive passes because a tile was played
     }
 
     /// Marks the game as over and optionally declares a winner (or a draw)
     ///
-    /// This method sets the internal `done` flag to true and records the winner (if any). Once called, `game_is_over` will
-    /// be true and `winner` will contain the ID of the winning player (or `None` if it is a draw).
+    /// This method sets the internal `done` flag to true and records the winner (if any). Once called, `game_is_over` will be true
+    /// and `winner` will contain the ID of the winning player (or `None` if it is a draw).
     ///
     /// # Arguments
     /// * `winner` - Player ID of the winner, `None` if it is a draw.
@@ -265,8 +261,8 @@ impl DominoesState {
     /// ```
     /// # Important Note
     /// This method does not automatically end the game. It only updates the game state. Game state update logic should call
-    /// `mark_game_over()` when appropriate, and game control logic should check `game_is_over` and `winner` to determine if the game is
-    /// over and who the winner is.
+    /// `mark_game_over()` when appropriate, and game control logic should check `game_is_over` and `winner` to determine if the
+    /// game is over and who the winner is.
     pub fn mark_game_over(&mut self, winner: Option<u8>) {
         self.game_is_over = true;
         self.winner = winner;
@@ -311,52 +307,49 @@ impl DominoesState {
     // Increments the consecutive passes counter, or resets it
     fn update_consecutive_passes(&mut self, increment: bool) {
         // FIXME: This currently does not change the fingerprint, but it probably should
-        self.consecutive_passes = if increment {
-            self.consecutive_passes + 1
-        } else {
-            0
-        };
+        self.consecutive_passes = if increment { self.consecutive_passes + 1 } else { 0 };
     }
 }
 
-
 /// A view of the state for a specific player
+#[allow(dead_code)]
 struct PlayerView<'a> {
     state: &'a mut DominoesState,
     player_id: u8,
 }
 
+#[allow(dead_code)]
 impl<'a> PlayerView<'a> {
     /// Returns a reference to the layout of the game
-    pub fn layout(&self) -> &Layout { &self.state.layout }
-    /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
-    /// Returns a reference to the player's own hand
-    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize] }
-    /// Returns a mutable reference to the player's own hand
-    pub fn hand_mut(&mut self) -> &mut Vec<Tile> { &mut self.state.hands[self.player_id as usize] }
-    /// Returns an iterator over the sizes of each player's hand
-    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+    pub fn layout(&self) -> &Layout {
+        &self.state.layout
     }
+    /// Returns the number of tiles remaining in the boneyard
+    pub fn boneyard_size(&self) -> usize {
+        self.state.boneyard.count()
+    }
+    // TODO: hand access requires hands to be part of DominoesState, which is not yet implemented
 }
 
 /// A public view of the state
 ///
 /// This view exposes only information that is public to all players, hiding private information such as other players' hands.
+#[allow(dead_code)]
 struct PublicView<'a> {
     state: &'a DominoesState,
 }
 
+#[allow(dead_code)]
 impl<'a> PublicView<'a> {
     /// Returns a reference to the layout of the game
-    pub fn layout(&self) -> &Layout { &self.state.layout }
-    /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
-    /// Returns an iterator over the sizes of each player's hand
-    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
+    pub fn layout(&self) -> &Layout {
+        &self.state.layout
     }
+    /// Returns the number of tiles remaining in the boneyard
+    pub fn boneyard_size(&self) -> usize {
+        self.state.boneyard.count()
+    }
+    // TODO: hand sizes require hands to be part of DominoesState, which is not yet implemented
 }
 
 #[cfg(test)]
@@ -369,7 +362,7 @@ mod tests {
         let state = DominoesState::new(&configuration);
         assert!(!state.game_is_over);
         assert_eq!(state.winner, None);
-        assert_eq!(state.whose_turn(), 0); // PlayerId::ALICE as u8
+        assert_eq!(state.whose_turn(), PlayerId::Alice);
         assert_eq!(state.consecutive_passes, 0);
         assert_eq!(state.fingerprint(), 0);
     }
@@ -587,7 +580,7 @@ mod tests {
         let state = DominoesState::new(&configuration);
 
         // Test State trait methods
-        assert_eq!(state.whose_turn(), 0); // PlayerId::ALICE as u8
+        assert_eq!(state.whose_turn(), PlayerId::Alice);
 
         // Test fingerprint (should be valid u64)
         let fingerprint = state.fingerprint();

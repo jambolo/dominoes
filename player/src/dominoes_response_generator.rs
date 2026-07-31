@@ -1,10 +1,10 @@
 //! Dominoes Response generator
 //!
-//! This module defines the response generator for the Dominoes game, which is responsible for generating all possible
-//! actions from a given game state.
+//! This module defines the response generator for the Dominoes game, which is responsible for generating all possible actions from
+//! a given game state.
 
+use dominoes_state::{Action, DominoesState};
 use game_player::mcts::ResponseGenerator;
-use dominoes_state::{DominoesState, Action};
 
 /// A response generator for the Dominoes game that implements the `ResponseGenerator` trait.
 ///
@@ -40,8 +40,8 @@ impl DominoesResponseGenerator {
 impl Default for DominoesResponseGenerator {
     /// Creates a default `DominoesResponseGenerator` instance.
     ///
-    /// This implementation uses the `new()` method to create a default instance,
-    /// providing a convenient way to create the generator using Rust's `Default` trait.
+    /// This implementation uses the `new()` method to create a default instance, providing a convenient way to create the generator
+    /// using Rust's `Default` trait.
     ///
     /// # Returns
     ///
@@ -78,12 +78,12 @@ mod tests {
     #[test]
     fn test_new_creates_generator() {
         let generator = DominoesResponseGenerator::new();
-        // Since the struct is a unit struct, we just verify it can be created
-        // This test ensures the constructor works correctly
+        // Since the struct is a unit struct, we just verify it can be created. This test ensures the constructor works correctly
         let _ = generator;
     }
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)] // exercises Default explicitly
     fn test_default_creates_generator() {
         let generator = DominoesResponseGenerator::default();
         // Verify the Default trait implementation works
@@ -98,13 +98,13 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)] // exercises Default explicitly
     fn test_multiple_instances_are_independent() {
         let generator1 = DominoesResponseGenerator::new();
         let generator2 = DominoesResponseGenerator::new();
         let generator3 = DominoesResponseGenerator::default();
 
-        // Since this is a unit struct, all instances are effectively the same
-        // but we can create multiple instances without issues
+        // Since this is a unit struct, all instances are effectively the same but we can create multiple instances without issues
         let _ = (generator1, generator2, generator3);
     }
 }

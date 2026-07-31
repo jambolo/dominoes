@@ -74,49 +74,271 @@ pub const MAX_PIPS: u8 = 21;
 
 // All domino tiles in order.
 //
-// This constant array contains all possible domino tile combinations in canonical form,
-// indexed by their ordinal values. Each tuple (a, b) represents a domino tile where a ≤ b.
+// This constant array contains all possible domino tile combinations in canonical form, indexed by their ordinal values. Each tuple
+// (a, b) represents a domino tile where a ≤ b.
 //
 // # Note
 // This array supports domino sets up to double-21, containing 253 total tiles.
 const TUPLES: [(u8, u8); 253] = [
     (0, 0),
-    (0, 1), (1, 1),
-    (0, 2), (1, 2), (2, 2),
-    (0, 3), (1, 3), (2, 3), (3, 3),
-    (0, 4), (1, 4), (2, 4), (3, 4), (4, 4),
-    (0, 5), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5),
-    (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6),
-    (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (5, 7), (6, 7), (7, 7),
-    (0, 8), (1, 8), (2, 8), (3, 8), (4, 8), (5, 8), (6, 8), (7, 8), (8, 8),
-    (0, 9), (1, 9), (2, 9), (3, 9), (4, 9), (5, 9), (6, 9), (7, 9), (8, 9), (9, 9),
-    (0, 10), (1, 10), (2, 10), (3, 10), (4, 10), (5, 10), (6, 10), (7, 10), (8, 10), (9, 10), (10, 10),
-    (0, 11), (1, 11), (2, 11), (3, 11), (4, 11), (5, 11), (6, 11), (7, 11), (8, 11), (9, 11), (10, 11), (11, 11),
-    (0, 12), (1, 12), (2, 12), (3, 12), (4, 12), (5, 12), (6, 12), (7, 12), (8, 12), (9, 12), (10, 12), (11, 12), (12, 12),
-    (0, 13), (1, 13), (2, 13), (3, 13), (4, 13), (5, 13), (6, 13), (7, 13), (8, 13), (9, 13), (10, 13), (11, 13), (12, 13),
+    (0, 1),
+    (1, 1),
+    (0, 2),
+    (1, 2),
+    (2, 2),
+    (0, 3),
+    (1, 3),
+    (2, 3),
+    (3, 3),
+    (0, 4),
+    (1, 4),
+    (2, 4),
+    (3, 4),
+    (4, 4),
+    (0, 5),
+    (1, 5),
+    (2, 5),
+    (3, 5),
+    (4, 5),
+    (5, 5),
+    (0, 6),
+    (1, 6),
+    (2, 6),
+    (3, 6),
+    (4, 6),
+    (5, 6),
+    (6, 6),
+    (0, 7),
+    (1, 7),
+    (2, 7),
+    (3, 7),
+    (4, 7),
+    (5, 7),
+    (6, 7),
+    (7, 7),
+    (0, 8),
+    (1, 8),
+    (2, 8),
+    (3, 8),
+    (4, 8),
+    (5, 8),
+    (6, 8),
+    (7, 8),
+    (8, 8),
+    (0, 9),
+    (1, 9),
+    (2, 9),
+    (3, 9),
+    (4, 9),
+    (5, 9),
+    (6, 9),
+    (7, 9),
+    (8, 9),
+    (9, 9),
+    (0, 10),
+    (1, 10),
+    (2, 10),
+    (3, 10),
+    (4, 10),
+    (5, 10),
+    (6, 10),
+    (7, 10),
+    (8, 10),
+    (9, 10),
+    (10, 10),
+    (0, 11),
+    (1, 11),
+    (2, 11),
+    (3, 11),
+    (4, 11),
+    (5, 11),
+    (6, 11),
+    (7, 11),
+    (8, 11),
+    (9, 11),
+    (10, 11),
+    (11, 11),
+    (0, 12),
+    (1, 12),
+    (2, 12),
+    (3, 12),
+    (4, 12),
+    (5, 12),
+    (6, 12),
+    (7, 12),
+    (8, 12),
+    (9, 12),
+    (10, 12),
+    (11, 12),
+    (12, 12),
+    (0, 13),
+    (1, 13),
+    (2, 13),
+    (3, 13),
+    (4, 13),
+    (5, 13),
+    (6, 13),
+    (7, 13),
+    (8, 13),
+    (9, 13),
+    (10, 13),
+    (11, 13),
+    (12, 13),
     (13, 13),
-    (0, 14), (1, 14), (2, 14), (3, 14), (4, 14), (5, 14), (6, 14), (7, 14), (8, 14), (9, 14), (10, 14), (11, 14), (12, 14),
-    (13, 14), (14, 14),
-    (0, 15), (1, 15), (2, 15), (3, 15), (4, 15), (5, 15), (6, 15), (7, 15), (8, 15), (9, 15), (10, 15), (11, 15), (12, 15),
-    (13, 15), (14, 15), (15, 15),
-    (0, 16), (1, 16), (2, 16), (3, 16), (4, 16), (5, 16), (6, 16), (7, 16), (8, 16), (9, 16), (10, 16), (11, 16), (12, 16),
-    (13, 16), (14, 16), (15, 16), (16, 16),
-    (0, 17), (1, 17), (2, 17), (3, 17), (4, 17), (5, 17), (6, 17), (7, 17), (8, 17), (9, 17), (10, 17), (11, 17), (12, 17),
-    (13, 17), (14, 17), (15, 17), (16, 17), (17, 17),
-    (0, 18), (1, 18), (2, 18), (3, 18), (4, 18), (5, 18), (6, 18), (7, 18), (8, 18), (9, 18), (10, 18), (11, 18), (12, 18),
-    (13, 18), (14, 18), (15, 18), (16, 18), (17, 18), (18, 18),
-    (0, 19), (1, 19), (2, 19), (3, 19), (4, 19), (5, 19), (6, 19), (7, 19), (8, 19), (9, 19), (10, 19), (11, 19), (12, 19),
-    (13, 19), (14, 19), (15, 19), (16, 19), (17, 19), (18, 19), (19, 19),
-    (0, 20), (1, 20), (2, 20), (3, 20), (4, 20), (5, 20), (6, 20), (7, 20), (8, 20), (9, 20), (10, 20), (11, 20), (12, 20),
-    (13, 20), (14, 20), (15, 20), (16, 20), (17, 20), (18, 20), (19, 20), (20, 20),
-    (0, 21), (1, 21), (2, 21), (3, 21), (4, 21), (5, 21), (6, 21), (7, 21), (8, 21), (9, 21), (10, 21), (11, 21), (12, 21),
-    (13, 21), (14, 21), (15, 21), (16, 21), (17, 21), (18, 21), (19, 21), (20, 21), (21, 21)
+    (0, 14),
+    (1, 14),
+    (2, 14),
+    (3, 14),
+    (4, 14),
+    (5, 14),
+    (6, 14),
+    (7, 14),
+    (8, 14),
+    (9, 14),
+    (10, 14),
+    (11, 14),
+    (12, 14),
+    (13, 14),
+    (14, 14),
+    (0, 15),
+    (1, 15),
+    (2, 15),
+    (3, 15),
+    (4, 15),
+    (5, 15),
+    (6, 15),
+    (7, 15),
+    (8, 15),
+    (9, 15),
+    (10, 15),
+    (11, 15),
+    (12, 15),
+    (13, 15),
+    (14, 15),
+    (15, 15),
+    (0, 16),
+    (1, 16),
+    (2, 16),
+    (3, 16),
+    (4, 16),
+    (5, 16),
+    (6, 16),
+    (7, 16),
+    (8, 16),
+    (9, 16),
+    (10, 16),
+    (11, 16),
+    (12, 16),
+    (13, 16),
+    (14, 16),
+    (15, 16),
+    (16, 16),
+    (0, 17),
+    (1, 17),
+    (2, 17),
+    (3, 17),
+    (4, 17),
+    (5, 17),
+    (6, 17),
+    (7, 17),
+    (8, 17),
+    (9, 17),
+    (10, 17),
+    (11, 17),
+    (12, 17),
+    (13, 17),
+    (14, 17),
+    (15, 17),
+    (16, 17),
+    (17, 17),
+    (0, 18),
+    (1, 18),
+    (2, 18),
+    (3, 18),
+    (4, 18),
+    (5, 18),
+    (6, 18),
+    (7, 18),
+    (8, 18),
+    (9, 18),
+    (10, 18),
+    (11, 18),
+    (12, 18),
+    (13, 18),
+    (14, 18),
+    (15, 18),
+    (16, 18),
+    (17, 18),
+    (18, 18),
+    (0, 19),
+    (1, 19),
+    (2, 19),
+    (3, 19),
+    (4, 19),
+    (5, 19),
+    (6, 19),
+    (7, 19),
+    (8, 19),
+    (9, 19),
+    (10, 19),
+    (11, 19),
+    (12, 19),
+    (13, 19),
+    (14, 19),
+    (15, 19),
+    (16, 19),
+    (17, 19),
+    (18, 19),
+    (19, 19),
+    (0, 20),
+    (1, 20),
+    (2, 20),
+    (3, 20),
+    (4, 20),
+    (5, 20),
+    (6, 20),
+    (7, 20),
+    (8, 20),
+    (9, 20),
+    (10, 20),
+    (11, 20),
+    (12, 20),
+    (13, 20),
+    (14, 20),
+    (15, 20),
+    (16, 20),
+    (17, 20),
+    (18, 20),
+    (19, 20),
+    (20, 20),
+    (0, 21),
+    (1, 21),
+    (2, 21),
+    (3, 21),
+    (4, 21),
+    (5, 21),
+    (6, 21),
+    (7, 21),
+    (8, 21),
+    (9, 21),
+    (10, 21),
+    (11, 21),
+    (12, 21),
+    (13, 21),
+    (14, 21),
+    (15, 21),
+    (16, 21),
+    (17, 21),
+    (18, 21),
+    (19, 21),
+    (20, 21),
+    (21, 21),
 ];
 
 // Ordinal values of double tiles for efficient lookup.
 //
-// This constant array contains the ordinal values corresponding to double tiles
-// (tiles where both sides have the same value). Used for fast double tile detection.
+// This constant array contains the ordinal values corresponding to double tiles (tiles where both sides have the same value). Used
+// for fast double tile detection.
 //
 // # Note
 // Contains ordinals for doubles from (0,0) up to (21,21).
@@ -211,8 +433,8 @@ pub const fn ordinal_to_tuple(ordinal: u8) -> (u8, u8) {
 
 /// Returns `true` if the tile is a double (both sides equal).
 ///
-/// Double tiles are important in many domino games as they often have
-/// special placement rules, scoring bonuses, or are used to start games.
+/// Double tiles are important in many domino games as they often have special placement rules, scoring bonuses, or are used to
+/// start games.
 ///
 /// # Arguments
 /// * `tile` - A domino tile represented as a tuple (u8, u8).
@@ -352,9 +574,7 @@ pub const fn set_size(n: u8) -> usize {
 /// assert_eq!(double_six.len(), 28); // Standard domino set
 /// ```
 pub fn all_tiles_as_tuples(set_id: u8) -> Vec<(u8, u8)> {
-    (0..=set_id)
-        .flat_map(|b| (0..=b).map(move |a| (a, b)))
-        .collect()
+    (0..=set_id).flat_map(|b| (0..=b).map(move |a| (a, b))).collect()
 }
 
 /// Returns a sorted Vec containing all domino tiles for a given set
@@ -427,12 +647,12 @@ mod tests {
 
     #[test]
     fn test_set_size_comprehensive() {
-        assert_eq!(set_size(0), 1);   // Only (0,0)
-        assert_eq!(set_size(1), 3);   // (0,0), (0,1), (1,1)
-        assert_eq!(set_size(2), 6);   // Double-two set
-        assert_eq!(set_size(3), 10);  // Double-three set
-        assert_eq!(set_size(6), 28);  // Standard double-six set
-        assert_eq!(set_size(9), 55);  // Double-nine set
+        assert_eq!(set_size(0), 1); // Only (0,0)
+        assert_eq!(set_size(1), 3); // (0,0), (0,1), (1,1)
+        assert_eq!(set_size(2), 6); // Double-two set
+        assert_eq!(set_size(3), 10); // Double-three set
+        assert_eq!(set_size(6), 28); // Standard double-six set
+        assert_eq!(set_size(9), 55); // Double-nine set
         assert_eq!(set_size(12), 91); // Double-twelve set
         assert_eq!(set_size(15), 136); // Double-fifteen set
         assert_eq!(set_size(21), 253); // Maximum supported set
@@ -447,9 +667,7 @@ mod tests {
         assert_eq!(tiles_1, vec![(0, 0), (0, 1), (1, 1)]);
 
         let tiles_2 = all_tiles_as_tuples(2);
-        assert_eq!(tiles_2, vec![
-            (0, 0), (0, 1), (1, 1), (0, 2), (1, 2), (2, 2)
-        ]);
+        assert_eq!(tiles_2, vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2), (2, 2)]);
 
         let tiles_3 = all_tiles_as_tuples(3);
         assert_eq!(tiles_3.len(), 10);
@@ -529,8 +747,14 @@ mod tests {
     fn test_tuple_ordinal_conversion_comprehensive() {
         // Test basic conversion cases
         let test_cases = [
-            ((0, 0), 0), ((0, 1), 1), ((1, 1), 2), ((0, 2), 3),
-            ((1, 2), 4), ((2, 2), 5), ((0, 6), 21), ((6, 6), 27),
+            ((0, 0), 0),
+            ((0, 1), 1),
+            ((1, 1), 2),
+            ((0, 2), 3),
+            ((1, 2), 4),
+            ((2, 2), 5),
+            ((0, 6), 21),
+            ((6, 6), 27),
         ];
 
         for ((a, b), expected_ordinal) in test_cases {
@@ -567,7 +791,7 @@ mod tests {
         assert!(!is_double_tuple((0, 1)));
 
         // Test ordinal double detection
-        assert!(is_double_ordinal(0));  // (0,0)
+        assert!(is_double_ordinal(0)); // (0,0)
         assert!(is_double_ordinal(27)); // (6,6)
         assert!(!is_double_ordinal(1)); // (0,1)
 
@@ -578,10 +802,10 @@ mod tests {
         }
 
         // Test some non-doubles
-        assert!(!is_double_ordinal(1));   // (0,1)
-        assert!(!is_double_ordinal(3));   // (0,2)
-        assert!(!is_double_ordinal(4));   // (1,2)
-        assert!(!is_double_ordinal(6));   // (0,3)
+        assert!(!is_double_ordinal(1)); // (0,1)
+        assert!(!is_double_ordinal(3)); // (0,2)
+        assert!(!is_double_ordinal(4)); // (1,2)
+        assert!(!is_double_ordinal(6)); // (0,3)
         assert!(!is_double_ordinal(251)); // (20,21)
     }
 

@@ -6,8 +6,8 @@
 
 use static_assertions::const_assert;
 
-use game_player::StaticEvaluator;
 use dominoes_state::DominoesState;
+use game_player::StaticEvaluator;
 
 const WEIGHT_MOBILITY: f32 = 0.4;
 const WEIGHT_TILE_ADVANTAGE: f32 = 0.2;
@@ -15,11 +15,7 @@ const WEIGHT_PIP_ADVANTAGE: f32 = 0.15;
 const WEIGHT_SCORING_POTENTIAL: f32 = 0.1;
 const WEIGHT_BLOCKING_POTENTIAL: f32 = 0.15;
 const _TOTAL_WEIGHT: f32 =
-    WEIGHT_MOBILITY +
-    WEIGHT_TILE_ADVANTAGE +
-    WEIGHT_PIP_ADVANTAGE +
-    WEIGHT_SCORING_POTENTIAL +
-    WEIGHT_BLOCKING_POTENTIAL;
+    WEIGHT_MOBILITY + WEIGHT_TILE_ADVANTAGE + WEIGHT_PIP_ADVANTAGE + WEIGHT_SCORING_POTENTIAL + WEIGHT_BLOCKING_POTENTIAL;
 const_assert!((_TOTAL_WEIGHT - 1.0).abs() < 5.0 * f32::EPSILON);
 
 /// A static evaluator for dominoes game states.
@@ -39,12 +35,10 @@ const_assert!((_TOTAL_WEIGHT - 1.0).abs() < 5.0 * f32::EPSILON);
 /// let state = DominoesState::new(&config);
 /// let value = evaluator.evaluate(&state);
 /// ```
-pub struct DominoesEvaluator
-{
-}
+#[derive(Default)]
+pub struct DominoesEvaluator {}
 
-impl DominoesEvaluator
-{
+impl DominoesEvaluator {
     /// Creates a new `DominoesEvaluator` instance.
     ///
     /// # Examples
@@ -52,41 +46,36 @@ impl DominoesEvaluator
     /// use player::DominoesEvaluator;
     /// let evaluator = DominoesEvaluator::new();
     /// ```
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         Self {}
     }
 
-    fn mobility_score(_state: &DominoesState) -> f32
-    {
+    fn mobility_score(_state: &DominoesState) -> f32 {
         // TODO: Unimplemented
         0.0
     }
 
-    fn tile_advantage(&self, _state: &DominoesState) -> f32
-    {
+    fn tile_advantage(&self, _state: &DominoesState) -> f32 {
         // TODO: Unimplemented
         0.0
     }
-    fn pip_advantage(&self, _state: &DominoesState) -> f32
-    {
+    fn pip_advantage(&self, _state: &DominoesState) -> f32 {
         // TODO: Unimplemented
         0.0
     }
-    fn scoring_potential(&self, _state: &DominoesState) -> f32
-    {
+    fn scoring_potential(&self, _state: &DominoesState) -> f32 {
         // TODO: Unimplemented
         0.0
     }
-    fn blocking_potential(&self, _state: &DominoesState) -> f32
-    {
+    fn blocking_potential(&self, _state: &DominoesState) -> f32 {
         // TODO: Unimplemented
         0.0
     }
 }
 
-impl StaticEvaluator<DominoesState> for DominoesEvaluator
-{
+impl StaticEvaluator for DominoesEvaluator {
+    type State = DominoesState;
+
     /// Evaluates the given dominoes game state using a weighted heuristic.
     ///
     /// The evaluation is a weighted sum of several factors:
@@ -101,13 +90,12 @@ impl StaticEvaluator<DominoesState> for DominoesEvaluator
     ///
     /// # Returns
     /// A floating point value representing the evaluation of the state.
-    fn evaluate(&self, state: &DominoesState) -> f32
-    {
+    fn evaluate(&self, state: &DominoesState) -> f32 {
         WEIGHT_MOBILITY * DominoesEvaluator::mobility_score(state)       // how many legal moves I have
             + WEIGHT_TILE_ADVANTAGE * self.tile_advantage(state) // tile advantage
             + WEIGHT_PIP_ADVANTAGE * self.pip_advantage(state)   // pip advantage
             + WEIGHT_SCORING_POTENTIAL * self.scoring_potential(state)    // sum of open ends mod 5 (if variant)
-            + WEIGHT_BLOCKING_POTENTIAL * self.blocking_potential(state)   // chance to lock opponent
+            + WEIGHT_BLOCKING_POTENTIAL * self.blocking_potential(state) // chance to lock opponent
     }
 
     /// Returns the evaluation value for an Alice win.

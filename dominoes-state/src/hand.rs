@@ -1,7 +1,7 @@
 //! A module defining a player's hand of domino tiles
 //!
-//! This module provides the Hand struct, which represents a player's collection of domino tiles during a game. It includes
-//! methods for managing the hand, such as adding and removing tiles, checking for specific tiles, and calculating the hand's score.
+//! This module provides the Hand struct, which represents a player's collection of domino tiles during a game. It includes methods
+//! for managing the hand, such as adding and removing tiles, checking for specific tiles, and calculating the hand's score.
 
 use rules::Tile;
 
@@ -12,7 +12,7 @@ use rules::Tile;
 ///
 /// # Examples
 /// ```rust
-/// # use player::Hand;
+/// # use dominoes_state::Hand;
 /// # use rules::Tile;
 ///
 /// let mut hand = Hand::new();
@@ -45,7 +45,7 @@ impl Hand {
     /// # Examples
     ///
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     ///
     /// let hand = Hand::new();
     /// assert_eq!(hand.len(), 0);
@@ -63,7 +63,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -89,7 +89,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -114,7 +114,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -140,7 +140,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -152,7 +152,9 @@ impl Hand {
     /// assert!(!hand.contains(&tile));
     /// ```
     pub fn remove_tile(&mut self, tile: &Tile) {
-        let pos = self.tiles.iter()
+        let pos = self
+            .tiles
+            .iter()
             .position(|&x| x == *tile)
             .unwrap_or_else(|| panic!("Tile {tile} not found in hand"));
         self.tiles.remove(pos);
@@ -165,7 +167,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -198,7 +200,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -375,11 +377,7 @@ mod tests {
     #[test]
     fn test_hand_remove_multiple_tiles() {
         let mut hand = Hand::new();
-        let tiles = vec![
-            Tile::from((1, 1)),
-            Tile::from((2, 2)),
-            Tile::from((3, 3)),
-        ];
+        let tiles = vec![Tile::from((1, 1)), Tile::from((2, 2)), Tile::from((3, 3))];
 
         // Add all tiles
         for tile in &tiles {
@@ -448,12 +446,7 @@ mod tests {
     #[test]
     fn test_hand_tiles_order_preservation() {
         let mut hand = Hand::new();
-        let tiles = vec![
-            Tile::from((6, 6)),
-            Tile::from((1, 2)),
-            Tile::from((0, 5)),
-            Tile::from((3, 3)),
-        ];
+        let tiles = vec![Tile::from((6, 6)), Tile::from((1, 2)), Tile::from((0, 5)), Tile::from((3, 3))];
 
         // Add tiles in specific order
         for tile in &tiles {
@@ -519,6 +512,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::len_zero)] // the test compares is_empty() against len() on purpose
     fn test_hand_is_empty_consistency_with_len() {
         let mut hand = Hand::new();
 

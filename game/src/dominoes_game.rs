@@ -20,8 +20,8 @@ pub struct DominoesGame<'a> {
 impl<'a> DominoesGame<'a> {
     /// Creates a new dominoes game with the given configuration
     ///
-    /// Initializes a fresh dominoes game by setting up the game state, creating two human players (Alice and Bob), and preparing
-    /// an empty action history.
+    /// Initializes a fresh dominoes game by setting up the game state, creating two human players (Alice and Bob), and preparing an
+    /// empty action history.
     ///
     /// # Arguments
     /// * `configuration` - Game rules and settings including hand size, set size, and game variation
@@ -43,8 +43,8 @@ impl<'a> DominoesGame<'a> {
     pub fn new(configuration: &'a Configuration) -> Self {
         Self {
             configuration,
-            alice: HumanPlayer::new(PlayerId::ALICE as u8, configuration, "Alice"),
-            bob: HumanPlayer::new(PlayerId::BOB as u8, configuration, "Bob"),
+            alice: HumanPlayer::new(PlayerId::Alice as u8, configuration, "Alice"),
+            bob: HumanPlayer::new(PlayerId::Bob as u8, configuration, "Bob"),
             history: History::new(),
         }
     }
@@ -56,8 +56,8 @@ impl<'a> DominoesGame<'a> {
     /// 2. Runs the turn-based game loop until completion
     /// 3. Handles game end conditions and displays results
     ///
-    /// The game continues until either a win condition is met or a maximum number of turns is reached (to prevent infinite loops
-    /// in stub implementations).
+    /// The game continues until either a win condition is met or a maximum number of turns is reached (to prevent infinite loops in
+    /// stub implementations).
     ///
     /// # Examples
     ///
@@ -90,7 +90,7 @@ impl<'a> DominoesGame<'a> {
         let max_turns = self.configuration.set_size() * 2 + self.configuration.num_players(); // draw+play for each tile plus passing
 
         while !state.game_is_over && turn_count < max_turns {
-            let current_player_id = state.whose_turn();
+            let current_player_id = state.whose_turn() as u8;
             let player_name = self.player(current_player_id).name().to_string();
             println!("\nIt's {player_name}'s turn");
             loop {
@@ -164,19 +164,15 @@ impl<'a> DominoesGame<'a> {
                     first_player = match (self.alice.highest_double(), self.bob.highest_double()) {
                         (Some(a), Some(b)) => {
                             // Both players have doubles, highest starts
-                            Some(if a > b {
-                                PlayerId::ALICE as u8
-                            } else {
-                                PlayerId::BOB as u8
-                            })
+                            Some(if a > b { PlayerId::Alice as u8 } else { PlayerId::Bob as u8 })
                         }
                         (Some(_), None) => {
                             // Alice has a double, Bob does not
-                            Some(PlayerId::ALICE as u8)
+                            Some(PlayerId::Alice as u8)
                         }
                         (None, Some(_)) => {
                             // Bob has a double, Alice does not
-                            Some(PlayerId::BOB as u8)
+                            Some(PlayerId::Bob as u8)
                         }
                         (None, None) => {
                             // Neither have doubles, must redraw
@@ -204,8 +200,8 @@ impl<'a> DominoesGame<'a> {
     fn game_is_over_by_variation(&self, state: &DominoesState) -> Option<Option<u8>> {
         match self.configuration.variation() {
             rules::Variation::Traditional => {
-                // In Traditional variation, game ends when a player empties their hand or both players pass. The winner is
-                // the player with the lowest hand score.
+                // In Traditional variation, game ends when a player empties their hand or both players pass. The winner is the
+                // player with the lowest hand score.
                 if self.alice.hand().is_empty() {
                     return Some(Some(self.alice.id()));
                 } else if self.bob.hand().is_empty() {
@@ -214,9 +210,9 @@ impl<'a> DominoesGame<'a> {
                     let alice_score = self.alice.hand().score();
                     let bob_score = self.bob.hand().score();
                     return Some(if alice_score < bob_score {
-                        Some(PlayerId::ALICE as u8)
+                        Some(PlayerId::Alice as u8)
                     } else if bob_score < alice_score {
-                        Some(PlayerId::BOB as u8)
+                        Some(PlayerId::Bob as u8)
                     } else {
                         None
                     });
@@ -279,11 +275,7 @@ impl<'a> DominoesGame<'a> {
         let actions = self.history.get_actions();
         println!("\nAction History ({} actions):", actions.len());
         for (i, action) in actions.iter().enumerate() {
-            println!(
-                "  {}: {} - {action}",
-                i + 1,
-                self.player(action.player_id).name()
-            );
+            println!("  {}: {} - {action}", i + 1, self.player(action.player_id).name());
         }
 
         println!("Game completed successfully!");
@@ -304,13 +296,9 @@ mod tests {
         let config = create_test_configuration();
         let game = DominoesGame::new(&config);
 
-        // Verify the game was created successfully
-        // Check that the configuration values are properly stored
+        // Verify the game was created successfully and check that the configuration values are properly stored
         assert_eq!(game.configuration.num_players(), config.num_players());
-        assert_eq!(
-            game.configuration.starting_hand_size(),
-            config.starting_hand_size()
-        );
+        assert_eq!(game.configuration.starting_hand_size(), config.starting_hand_size());
         assert_eq!(game.configuration.set_id(), config.set_id());
     }
 
@@ -319,10 +307,7 @@ mod tests {
         // Test with default configuration
         let default_config = Configuration::default();
         let default_game = DominoesGame::new(&default_config);
-        assert_eq!(
-            default_game.configuration.num_players(),
-            default_config.num_players()
-        );
+        assert_eq!(default_game.configuration.num_players(), default_config.num_players());
         assert_eq!(
             default_game.configuration.starting_hand_size(),
             default_config.starting_hand_size()
@@ -331,14 +316,8 @@ mod tests {
         // Test with traditional variation
         let traditional_config = Configuration::new(2, Variation::Traditional, 7, 6);
         let traditional_game = DominoesGame::new(&traditional_config);
-        assert_eq!(
-            traditional_game.configuration.num_players(),
-            traditional_config.num_players()
-        );
-        assert_eq!(
-            traditional_game.configuration.set_id(),
-            traditional_config.set_id()
-        );
+        assert_eq!(traditional_game.configuration.num_players(), traditional_config.num_players());
+        assert_eq!(traditional_game.configuration.set_id(), traditional_config.set_id());
 
         // Test with different hand size
         let large_hand_config = Configuration::new(2, Variation::Traditional, 6, 10);
@@ -347,10 +326,7 @@ mod tests {
             large_hand_game.configuration.starting_hand_size(),
             large_hand_config.starting_hand_size()
         );
-        assert_eq!(
-            large_hand_game.configuration.num_players(),
-            large_hand_config.num_players()
-        );
+        assert_eq!(large_hand_game.configuration.num_players(), large_hand_config.num_players());
     }
 
     #[test]
@@ -369,10 +345,7 @@ mod tests {
         let game = DominoesGame::new(&minimal_config);
 
         assert_eq!(game.configuration.num_players(), minimal_config.num_players());
-        assert_eq!(
-            game.configuration.starting_hand_size(),
-            minimal_config.starting_hand_size()
-        );
+        assert_eq!(game.configuration.starting_hand_size(), minimal_config.starting_hand_size());
         assert_eq!(game.configuration.set_id(), minimal_config.set_id());
         assert!(game.history.get_actions().is_empty());
     }
@@ -384,10 +357,7 @@ mod tests {
         let game = DominoesGame::new(&large_config);
 
         assert_eq!(game.configuration.num_players(), large_config.num_players());
-        assert_eq!(
-            game.configuration.starting_hand_size(),
-            large_config.starting_hand_size()
-        );
+        assert_eq!(game.configuration.starting_hand_size(), large_config.starting_hand_size());
         assert_eq!(game.configuration.set_id(), large_config.set_id());
         assert!(game.history.get_actions().is_empty());
     }
@@ -399,10 +369,7 @@ mod tests {
 
         // Verify that the game holds a reference to the same configuration
         assert_eq!(game.configuration.num_players(), config.num_players());
-        assert_eq!(
-            game.configuration.starting_hand_size(),
-            config.starting_hand_size()
-        );
+        assert_eq!(game.configuration.starting_hand_size(), config.starting_hand_size());
         assert_eq!(game.configuration.set_id(), config.set_id());
     }
 
@@ -443,13 +410,11 @@ mod tests {
         assert!(game1.history.get_actions().is_empty());
         assert!(game2.history.get_actions().is_empty());
 
-        assert_eq!(
-            game1.configuration.num_players(),
-            game2.configuration.num_players()
-        );
+        assert_eq!(game1.configuration.num_players(), game2.configuration.num_players());
     }
 
     #[test]
+    #[allow(clippy::single_element_loop)] // more variations will be added to the list
     fn test_dominoes_game_new_with_all_variations() {
         // Test game creation with different variations
         for &variation in &[Variation::Traditional] {
@@ -461,20 +426,17 @@ mod tests {
         }
     }
 
-    // Note: Testing run() method directly is challenging because it requires user input
-    // from HumanPlayer. Integration tests would be needed to test the full game flow.
+    // Note: Testing run() method directly is challenging because it requires user input from HumanPlayer. Integration tests would
+    // be needed to test the full game flow.
 
     #[test]
     fn test_dominoes_game_public_api_structure() {
         let config = create_test_configuration();
         let mut game = DominoesGame::new(&config);
 
-        // Verify that the public API is accessible
-        // new() method works
+        // Verify that the public API is accessible: new() method works
         assert!(game.history.get_actions().is_empty());
 
-        // run() method exists and can be called (though we can't test it fully without mocking input)
-        // We're not actually calling run() here to avoid requiring user input
         // Just verifying it exists and compiles
         let _can_call_run = || game.run();
     }

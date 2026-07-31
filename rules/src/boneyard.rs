@@ -22,7 +22,7 @@
 //! ```
 
 use crate::{Configuration, Tile};
-use rand::{seq::SliceRandom, rng};
+use rand::{rng, seq::SliceRandom};
 
 /// A boneyard implementation.
 ///
@@ -304,8 +304,8 @@ impl Boneyard {
     /// assert_eq!(boneyard.peek(), None);
     /// ```
     /// # Note
-    /// The returned reference is never invalidated as long as the boneyard exists, but will no longer reference the next tile to
-    /// be drawn after a call to `draw()` or `shuffle()`.
+    /// The returned reference is never invalidated as long as the boneyard exists, but will no longer reference the next tile to be
+    /// drawn after a call to `draw()` or `shuffle()`.
     pub fn peek(&self) -> Option<&Tile> {
         self.tiles.get(self.next)
     }
@@ -382,7 +382,11 @@ mod tests {
 
     #[test]
     fn test_boneyard_with_tiles() {
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+        ];
         let mut boneyard = Boneyard::with(tiles);
 
         assert_eq!(boneyard.count(), 3);
@@ -396,7 +400,13 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_remaining_tiles() {
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+            crate::Tile::from((4, 4)),
+        ];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw some tiles first
@@ -408,7 +418,13 @@ mod tests {
         let remaining_before: Vec<_> = (0..3).map(|_| boneyard.draw().unwrap()).collect();
 
         // Reset boneyard to same state
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+            crate::Tile::from((4, 4)),
+        ];
         let mut boneyard = Boneyard::with(tiles);
         boneyard.draw(); // (0, 0)
         boneyard.draw(); // (1, 1)
@@ -463,7 +479,12 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_full() {
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+        ];
         let mut boneyard = Boneyard::with(tiles.clone());
 
         // Shuffle without drawing any tiles
@@ -489,7 +510,13 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_preserves_drawn_tiles() {
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+            crate::Tile::from((4, 4)),
+        ];
         let mut boneyard = Boneyard::with(tiles);
 
         // Draw some tiles
@@ -511,7 +538,11 @@ mod tests {
         assert_eq!(remaining.len(), 3);
 
         // Should contain the expected remaining tiles
-        let expected_remaining = vec![crate::Tile::from((2, 2)), crate::Tile::from((3, 3)), crate::Tile::from((4, 4))];
+        let expected_remaining = vec![
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+            crate::Tile::from((4, 4)),
+        ];
         for tile in &expected_remaining {
             assert!(remaining.contains(tile));
         }
@@ -519,7 +550,12 @@ mod tests {
 
     #[test]
     fn test_boneyard_shuffle_multiple_times() {
-        let tiles = vec![crate::Tile::from((0, 0)), crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
+        let tiles = vec![
+            crate::Tile::from((0, 0)),
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+        ];
         let mut boneyard = Boneyard::with(tiles.clone());
 
         // Draw one tile
@@ -535,7 +571,11 @@ mod tests {
         assert_eq!(boneyard.count(), 3);
 
         let remaining: Vec<_> = (0..3).map(|_| boneyard.draw().unwrap()).collect();
-        let expected_remaining = vec![crate::Tile::from((1, 1)), crate::Tile::from((2, 2)), crate::Tile::from((3, 3))];
+        let expected_remaining = vec![
+            crate::Tile::from((1, 1)),
+            crate::Tile::from((2, 2)),
+            crate::Tile::from((3, 3)),
+        ];
 
         assert_eq!(remaining.len(), expected_remaining.len());
         for tile in &expected_remaining {
@@ -561,7 +601,11 @@ mod tests {
 
     #[test]
     fn test_boneyard_peek_consistency() {
-        let tiles = vec![crate::Tile::from((1, 2)), crate::Tile::from((3, 4)), crate::Tile::from((5, 6))];
+        let tiles = vec![
+            crate::Tile::from((1, 2)),
+            crate::Tile::from((3, 4)),
+            crate::Tile::from((5, 6)),
+        ];
         let mut boneyard = Boneyard::with(tiles);
 
         // Multiple peeks should return the same tile
@@ -674,7 +718,7 @@ mod tests {
             crate::Tile::from((0, 0)),
             crate::Tile::from((1, 1)),
             crate::Tile::from((2, 2)),
-            crate::Tile::from((3, 3))
+            crate::Tile::from((3, 3)),
         ];
         let mut boneyard = Boneyard::with(tiles);
 
@@ -702,7 +746,7 @@ mod tests {
             crate::Tile::from((0, 0)),
             crate::Tile::from((1, 1)),
             crate::Tile::from((2, 2)),
-            crate::Tile::from((3, 3))
+            crate::Tile::from((3, 3)),
         ];
 
         assert_eq!(drawn_tiles.len(), expected_tiles.len());
@@ -737,7 +781,7 @@ mod tests {
 
         // Should have no duplicates
         for i in 0..drawn_tiles.len() {
-            for j in i+1..drawn_tiles.len() {
+            for j in i + 1..drawn_tiles.len() {
                 assert_ne!(drawn_tiles[i], drawn_tiles[j], "Found duplicate tile: {:?}", drawn_tiles[i]);
             }
         }
