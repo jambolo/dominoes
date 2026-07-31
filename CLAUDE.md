@@ -2,70 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build and Test Commands
-
-```bash
-cargo build                    # Build all crates
-cargo test                     # Run all tests
-cargo test <test_name>         # Run a single test
-cargo clippy                   # Lint
-cargo fmt                      # Format code
-cargo run --bin dominoes       # Run the game
-cargo run --bin visualize      # Run visualize utility
-cargo run --bin generate       # Run generate utility
-```
-
-## Feature Flags (game-player crate)
-
-- `analysis_game_tree` - JSON serialization for search tree analysis
-- `analysis_game_state` - JSON serialization for game state analysis
-- `debug_game_tree_node_info` - Debug info for tree nodes
-
 ## Architecture
 
-Rust workspace with 5 crates:
+Rust workspace. The `game-player` submodule may be uninitialized on disk (`git submodule update --init`); its summary below is the only in-repo documentation when it is.
 
-```
-game (main app)
-├── player (AI implementation)
-│   └── game-player (generic game ai framework, submodule)
-├── dominoes-state (game state, actions, hands)
-└── rules (tiles, layout, boneyard, configuration, variations)
-```
+### game-player (submodule, v0.4.0)
 
-### rules
-
-Core types: `Tile` (ordinal-based u8), `Layout` (tree via ego_tree), `Boneyard`, `Configuration`, `Variation` (Traditional, AllFives, AllSevens, Bergen, Blind, FiveUp).
-
-### dominoes-state
-
-`DominoesState` implements `game_player::State` trait. Tracks layout, boneyard, turn, fingerprint, passes, game status. Uses Zobrist hashing.
-
-### game-player (submodule)
-
-Generic AI framework with MCTS (Monte Carlo Tree Search).
+Generic AI framework with minimax (alpha-beta + transposition table) and MCTS searches.
 
 **Core Traits:**
 
-- `State` (`state.rs`): Game state with fingerprinting, turn tracking, action application. Has associated `Action` type.
-- `ResponseGenerator` (`mcts.rs`): Generates legal moves. Returns empty vec when none available.
-- `Rollout` (`mcts.rs`): Simulates game to terminal state, returns score in `[-1.0, 1.0]`.
+- `State` (`state.rs`): Game state with fingerprinting, turn tracking, action application. Has associated `Action` type. `whose_turn()` returns `PlayerId` (`Alice = 0`, `Bob = 1`).
+- `mcts::ResponseGenerator` (`mcts.rs`): Generates legal moves. Policy: must return no actions if and only if `state.is_terminal()` is true (validated by `debug_assert` in the search); a non-terminal state with no plays must yield an explicit pass action. A separate `minimax::ResponseGenerator` (with a `depth` parameter) exists for minimax.
+- `mcts::ValueEstimator` (`mcts.rs`): Replaces the old `Rollout` trait. `estimate(&self, state, rg) -> f32` returns a value in `[0.0, 1.0]` from the perspective of `state.whose_turn()`; `0.0`/`1.0` are reserved for certain outcomes.
+- `StaticEvaluator` (`static_evaluator.rs`): Associated-type based (`type State`), evaluates from Alice's perspective. Used by minimax.
 
 **Search:**
 
-- `mcts::search()`: Entry point. Takes state, response generator, rollout, exploration constant (default `√2`), max iterations.
-- Returns `Option<Action>` - the action with most visits.
-- `InformationSetMCTS` (`information_set_mcts.rs`): For hidden information games.
+- `mcts::search(s0, rg, estimator, exploration_constant, initial_value_weight, estimate_on_expansion, max_iterations)`: Returns `Option<Action>` - the action with most visits. Defaults: `DEFAULT_EXPLORATION_CONSTANT` (`√2`), `DEFAULT_INITIAL_VALUE_WEIGHT` (`0.0`).
+- `minimax::search()`: Alpha-beta minimax entry point.
+- `RandomPlayoutEstimator` (`random_playout.rs`, feature `mcts_random_playout`): Generic random-rollout `ValueEstimator`.
 
-**Integration:** Implement `State`, `ResponseGenerator`, `Rollout` traits, call `mcts::search()`.
-
-### player
-
-Dominoes-specific `DominoesPlayer`, `ResponseGenerator`, `Rollout`, `StaticEvaluator` implementations.
-
-### game
-
-Main app using Iced GUI. Contains `dominoes_game.rs` (game loop), `layout_parser.rs`, `scene_graph.rs`.
+**Integration:** Implement `State`, `mcts::ResponseGenerator`, `mcts::ValueEstimator` traits, call `mcts::search()`.
 
 ## Branch Strategy
 

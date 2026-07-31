@@ -10,6 +10,7 @@ pub mod dominoes_response_generator;
 pub mod dominoes_rollout;
 pub mod dominoes_static_evaluator;
 
+pub use dominoes_state::Hand;
 pub use player::*;
 pub use human_player::*;
 pub use dominoes_player::*;

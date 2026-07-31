@@ -85,8 +85,10 @@ impl DominoesEvaluator
     }
 }
 
-impl StaticEvaluator<DominoesState> for DominoesEvaluator
+impl StaticEvaluator for DominoesEvaluator
 {
+    type State = DominoesState;
+
     /// Evaluates the given dominoes game state using a weighted heuristic.
     ///
     /// The evaluation is a weighted sum of several factors:

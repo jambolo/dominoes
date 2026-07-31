@@ -20,3 +20,6 @@ Cargo.lock
 
 # Ignore Claude files
 .claude/
+
+# Ignore machine specific rust configuration
+.cargo/config.toml

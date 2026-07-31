@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use dominoes_state::{Action, DominoesState};
 use crate::{Hand, Player, DominoesResponseGenerator, DominoesRollout};
 use rules::{Configuration, Tile};
-use game_player::{mcts, State};
+use game_player::{mcts, mcts::ResponseGenerator, State};
 
 /// An AI implementation of Player for dominoes games
 #[derive(Debug, Clone)]
@@ -138,7 +138,22 @@ impl<'a> Player for DominoesPlayer<'a> {
 
         let rg = DominoesResponseGenerator::new();
         let rollout = DominoesRollout::new();
-        let action: Option<Action> = mcts::search(state, &rg, &rollout, 1.414f32, 1000);
+        // TODO: DominoesResponseGenerator::generate is not implemented yet and returns no actions.
+        // mcts::search requires generate to return no actions if and only if the state is terminal,
+        // so skip the search until move generation is implemented.
+        let action: Option<Action> = if rg.generate(state).is_empty() {
+            None
+        } else {
+            mcts::search(
+                state,
+                &rg,
+                &rollout,
+                mcts::DEFAULT_EXPLORATION_CONSTANT,
+                mcts::DEFAULT_INITIAL_VALUE_WEIGHT,
+                false,
+                1000,
+            )
+        };
 
         match action {
             Some(action) => {

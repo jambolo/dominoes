@@ -43,8 +43,8 @@ impl<'a> DominoesGame<'a> {
     pub fn new(configuration: &'a Configuration) -> Self {
         Self {
             configuration,
-            alice: HumanPlayer::new(PlayerId::ALICE as u8, configuration, "Alice"),
-            bob: HumanPlayer::new(PlayerId::BOB as u8, configuration, "Bob"),
+            alice: HumanPlayer::new(PlayerId::Alice as u8, configuration, "Alice"),
+            bob: HumanPlayer::new(PlayerId::Bob as u8, configuration, "Bob"),
             history: History::new(),
         }
     }
@@ -90,7 +90,7 @@ impl<'a> DominoesGame<'a> {
         let max_turns = self.configuration.set_size() * 2 + self.configuration.num_players(); // draw+play for each tile plus passing
 
         while !state.game_is_over && turn_count < max_turns {
-            let current_player_id = state.whose_turn();
+            let current_player_id = state.whose_turn() as u8;
             let player_name = self.player(current_player_id).name().to_string();
             println!("\nIt's {player_name}'s turn");
             loop {
@@ -165,18 +165,18 @@ impl<'a> DominoesGame<'a> {
                         (Some(a), Some(b)) => {
                             // Both players have doubles, highest starts
                             Some(if a > b {
-                                PlayerId::ALICE as u8
+                                PlayerId::Alice as u8
                             } else {
-                                PlayerId::BOB as u8
+                                PlayerId::Bob as u8
                             })
                         }
                         (Some(_), None) => {
                             // Alice has a double, Bob does not
-                            Some(PlayerId::ALICE as u8)
+                            Some(PlayerId::Alice as u8)
                         }
                         (None, Some(_)) => {
                             // Bob has a double, Alice does not
-                            Some(PlayerId::BOB as u8)
+                            Some(PlayerId::Bob as u8)
                         }
                         (None, None) => {
                             // Neither have doubles, must redraw
@@ -214,9 +214,9 @@ impl<'a> DominoesGame<'a> {
                     let alice_score = self.alice.hand().score();
                     let bob_score = self.bob.hand().score();
                     return Some(if alice_score < bob_score {
-                        Some(PlayerId::ALICE as u8)
+                        Some(PlayerId::Alice as u8)
                     } else if bob_score < alice_score {
-                        Some(PlayerId::BOB as u8)
+                        Some(PlayerId::Bob as u8)
                     } else {
                         None
                     });

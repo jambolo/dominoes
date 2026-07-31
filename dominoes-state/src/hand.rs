@@ -12,7 +12,7 @@ use rules::Tile;
 ///
 /// # Examples
 /// ```rust
-/// # use player::Hand;
+/// # use dominoes_state::Hand;
 /// # use rules::Tile;
 ///
 /// let mut hand = Hand::new();
@@ -45,7 +45,7 @@ impl Hand {
     /// # Examples
     ///
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     ///
     /// let hand = Hand::new();
     /// assert_eq!(hand.len(), 0);
@@ -63,7 +63,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -89,7 +89,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -114,7 +114,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -140,7 +140,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -165,7 +165,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();
@@ -198,7 +198,7 @@ impl Hand {
     ///
     /// # Examples
     /// ```rust
-    /// # use player::Hand;
+    /// # use dominoes_state::Hand;
     /// # use rules::Tile;
     ///
     /// let mut hand = Hand::new();

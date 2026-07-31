@@ -33,8 +33,12 @@ impl State for DominoesState {
         self.fingerprint.into()
     }
 
-    fn whose_turn(&self) -> u8 {
-        self.whose_turn
+    fn whose_turn(&self) -> PlayerId {
+        if self.whose_turn == PlayerId::Alice as u8 {
+            PlayerId::Alice
+        } else {
+            PlayerId::Bob
+        }
     }
 
     fn is_terminal(&self) -> bool {
@@ -77,7 +81,7 @@ impl DominoesState {
         Self {
             layout: Layout::new(configuration),
             boneyard: Boneyard::new(configuration),
-            whose_turn: PlayerId::ALICE as u8,
+            whose_turn: PlayerId::Alice as u8,
             fingerprint: ZHash::default(),
             consecutive_passes: 0,
             game_is_over: false,
@@ -86,11 +90,12 @@ impl DominoesState {
     }
 
     /// Returns a view of the state for a specific player
-    ///
-    /// Returns a view of the state for a specific player
-    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { self, player_id } }
+    #[allow(dead_code)]
+    fn player(&mut self, player_id: u8) -> PlayerView<'_> { PlayerView { state: self, player_id } }
 
-    fn public(&self) -> PublicView<'_> { PublicView { self } }
+    /// Returns a public view of the state
+    #[allow(dead_code)]
+    fn public(&self) -> PublicView<'_> { PublicView { state: self } }
 
     /// Checks if a tile can be played on the current layout
     ///
@@ -321,42 +326,36 @@ impl DominoesState {
 
 
 /// A view of the state for a specific player
+#[allow(dead_code)]
 struct PlayerView<'a> {
     state: &'a mut DominoesState,
     player_id: u8,
 }
 
+#[allow(dead_code)]
 impl<'a> PlayerView<'a> {
     /// Returns a reference to the layout of the game
     pub fn layout(&self) -> &Layout { &self.state.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
-    /// Returns a reference to the player's own hand
-    pub fn hand(&self) -> &[Tile] { &self.state.hands[self.player_id as usize] }
-    /// Returns a mutable reference to the player's own hand
-    pub fn hand_mut(&mut self) -> &mut Vec<Tile> { &mut self.state.hands[self.player_id as usize] }
-    /// Returns an iterator over the sizes of each player's hand
-    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
-    }
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.count() }
+    // TODO: hand access requires hands to be part of DominoesState, which is not yet implemented
 }
 
 /// A public view of the state
 ///
 /// This view exposes only information that is public to all players, hiding private information such as other players' hands.
+#[allow(dead_code)]
 struct PublicView<'a> {
     state: &'a DominoesState,
 }
 
+#[allow(dead_code)]
 impl<'a> PublicView<'a> {
     /// Returns a reference to the layout of the game
     pub fn layout(&self) -> &Layout { &self.state.layout }
     /// Returns the number of tiles remaining in the boneyard
-    pub fn boneyard_size(&self) -> usize { self.state.boneyard.len() }
-    /// Returns an iterator over the sizes of each player's hand
-    pub fn hand_sizes(&self) -> impl Iterator<Item = usize> + '_ {
-        self.state.hands.iter().map(Vec::len)
-    }
+    pub fn boneyard_size(&self) -> usize { self.state.boneyard.count() }
+    // TODO: hand sizes require hands to be part of DominoesState, which is not yet implemented
 }
 
 #[cfg(test)]
@@ -369,7 +368,7 @@ mod tests {
         let state = DominoesState::new(&configuration);
         assert!(!state.game_is_over);
         assert_eq!(state.winner, None);
-        assert_eq!(state.whose_turn(), 0); // PlayerId::ALICE as u8
+        assert_eq!(state.whose_turn(), PlayerId::Alice);
         assert_eq!(state.consecutive_passes, 0);
         assert_eq!(state.fingerprint(), 0);
     }
@@ -587,7 +586,7 @@ mod tests {
         let state = DominoesState::new(&configuration);
 
         // Test State trait methods
-        assert_eq!(state.whose_turn(), 0); // PlayerId::ALICE as u8
+        assert_eq!(state.whose_turn(), PlayerId::Alice);
 
         // Test fingerprint (should be valid u64)
         let fingerprint = state.fingerprint();
